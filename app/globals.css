@@ -1,26 +1,165 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #964900;
+  --color-primary-bright: #ec7700;
+  --color-primary-light: #ffb786;
+
+  --color-background: #f9f9f9;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f3f3f4;
+
+  --color-text-primary: #1a1c1c;
+  --color-text-secondary: #574336;
+
+  --color-border-accent: #e2e2e2;
+  --color-outline-accent: #8a7263;
+
+  --color-black: #1e1e1e;
+  --color-white: #ffffff;
+
+  --color-success: #0061a2;
+  --color-error: #ba1a1a;
+
+  --font-heading: var(--font-space-grotesk), sans-serif;
+  --font-body: var(--font-lexend), sans-serif;
+
+  --spacing-section: 120px;
+  --max-width-site: 1440px;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --container-padding: 2rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Tailwind's Preflight already handles basic resets. 
+   Avoid using universal selector resets as they can override utility classes. */
+
+
+body {
+  max-width: 100vw;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+}
+
+/* Typography Utilities */
+.text-uppercase { text-transform: uppercase; }
+.text-center { text-align: center; }
+.font-bold { font-weight: 700; }
+
+/* Grid System */
+.container {
+  max-width: var(--max-width-site);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+}
+
+/* Components */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.875rem;
+}
+
+.btn-primary {
+  background: var(--color-primary-bright);
+  color: var(--color-white);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(236, 119, 0, 0.3);
+}
+
+.btn-outline {
+  border: 1px solid var(--color-black);
+  color: var(--color-black);
+}
+
+.btn-outline:hover {
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+.btn-white {
+  background: var(--color-white);
+  color: var(--color-black);
+}
+
+.btn-white:hover {
+  background: var(--color-background);
+}
+
+/* Section spacing is handled by Tailwind utility classes (e.g., py-32) */
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  @theme {
+    --spacing-section: 80px;
+  }
+  
+  :root {
+    --container-padding: 1.5rem;
+  }
+  
+  .grid-12 {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-12 {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }

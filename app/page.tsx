@@ -1,65 +1,100 @@
-import Image from "next/image";
+import Navbar from "@/components/layout/Navbar";
+import Hero from "@/components/home/Hero";
+import CategorySection from "@/components/home/CategorySection";
+import ProductGrid from "@/components/shared/ProductGrid";
+import BrandStory from "@/components/home/BrandStory";
+import Newsletter from "@/components/home/Newsletter";
+import Footer from "@/components/layout/Footer";
+
+const trendingProducts = [
+  {
+    id: 1,
+    name: "AERO-DRY PERFORMANCE TEE",
+    category: "TRAINING",
+    price: "$55.00",
+    image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop",
+    imageAlt: "Aero-Dry Performance Tee",
+    rating: 4.9
+  },
+  {
+    id: 2,
+    name: "VELOCITY V2 SNEAKERS",
+    category: "RUNNING",
+    price: "$180.00",
+    image: "/disport_sneakers_product_1778407255046.png",
+    imageAlt: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop",
+    rating: 5.0
+  },
+  {
+    id: 3,
+    name: "COMPRESSION ARMOR TIGHTS",
+    category: "GYMWEAR",
+    price: "$75.00",
+    image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2071&auto=format&fit=crop",
+    imageAlt: "Compression Armor Tights",
+    rating: 4.8
+  },
+  {
+    id: 4,
+    name: "CORE TECH WINDSTOPPER",
+    category: "OUTDOOR",
+    price: "$120.00",
+    image: "https://images.unsplash.com/photo-1511402339625-5942682714cd?q=80&w=2070&auto=format&fit=crop",
+    imageAlt: "Core Tech Windstopper",
+    rating: 4.7
+  }
+];
+
+const bestSellers = [
+  {
+    id: 5,
+    name: "IGNITE FOAM RUNNERS",
+    category: "RUNNING",
+    price: "$160.00",
+    image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?q=80&w=2070&auto=format&fit=crop",
+    imageAlt: "Ignite Foam Runners",
+    rating: 4.9
+  },
+  {
+    id: 6,
+    name: "PRO-LIFT TRAINING SHOES",
+    category: "TRAINING",
+    price: "$140.00",
+    image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=2070&auto=format&fit=crop",
+    imageAlt: "https://images.unsplash.com/photo-1584735175315-9d5df23860e6?q=80&w=2070&auto=format&fit=crop",
+    rating: 4.8
+  },
+  {
+    id: 7,
+    name: "ELITE CARGO JOGGERS",
+    category: "SNEAKERS",
+    price: "$95.00",
+    image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=2070&auto=format&fit=crop",
+    imageAlt: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=2070&auto=format&fit=crop",
+    rating: 4.6
+  },
+  {
+    id: 8,
+    name: "DYNAMIC SHELL VEST",
+    category: "PERFORMANCE",
+    price: "$110.00",
+    image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2070&auto=format&fit=crop",
+    imageAlt: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop",
+    rating: 4.7
+  }
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="min-h-screen">
+      <Navbar />
+      <Hero />
+      <CategorySection />
+      <ProductGrid title="Trending Now" products={trendingProducts} />
+      <BrandStory />
+      <ProductGrid title="Best Sellers" products={bestSellers} />
+      <Newsletter />
+      <Footer />
+    </main>
   );
 }
