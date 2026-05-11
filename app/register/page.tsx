@@ -107,11 +107,11 @@ export default function RegisterPage() {
                     required
                     checked={formData.terms}
                     onChange={(e) => setFormData({ ...formData, terms: e.target.checked })}
-                    className="w-4 h-4 border-gray-200 rounded-none accent-black cursor-pointer"
+                    className="w-4 h-4 border-gray-300 rounded-none accent-black cursor-pointer"
                   />
                 </div>
-                <label htmlFor="terms" className="text-[10px] text-gray-500 font-medium leading-tight">
-                  I agree to Disport's <Link href="/document/terms" className="text-black font-bold hover:underline">Terms of Service</Link> and <Link href="/document/privacy" className="text-black font-bold hover:underline">Privacy Policy</Link>.
+                <label htmlFor="terms" className="text-[11px] text-gray-500 font-medium leading-relaxed">
+                  I have read and accepted the <Link href="/document/terms" className="text-black font-bold underline underline-offset-2">Terms & Conditions</Link>, the <Link href="/document/terms" className="text-black font-bold underline underline-offset-2">Terms & Conditions</Link> and the <Link href="/document/privacy" className="text-black font-bold underline underline-offset-2">Disport Privacy Policy</Link>.*
                 </label>
               </div>
 

@@ -102,6 +102,10 @@ export default function LoginPage() {
               >
                 Sign In <ArrowRight size={16} />
               </button>
+
+              <p className="mt-4 text-[10px] text-gray-500 font-medium leading-relaxed">
+                By entering this site, you agree to the <Link href="/document/terms" className="text-black font-bold underline! underline-offset-2!">Terms & Conditions</Link> and <Link href="/document/privacy" className="text-black font-bold underline underline-offset-2">Privacy Policy</Link>.
+              </p>
             </form>
 
             <div className="mt-12">
