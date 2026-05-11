@@ -543,7 +543,7 @@ export default function CartPage() {
       
       <Navbar />
       
-      <div className="max-w-7xl mx-auto px-4 pt-20 pb-32">
+      <div className="max-w-7xl mx-auto px-4 pt-0 pb-32">
         {/* Progress Stepper (Sportswear Style) */}
         <div className="absolute left-0 right-0 bg-[#F6F6F6] border-y border-gray-100 py-6 mb-12">
           <div className="max-w-7xl mx-auto px-4 flex justify-center">
