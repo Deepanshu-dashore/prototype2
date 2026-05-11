@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "stage": "git add . && git commit -m \"Staging Update\" && git push staging main"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
