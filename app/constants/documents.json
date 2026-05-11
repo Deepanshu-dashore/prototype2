@@ -1,0 +1,126 @@
+{
+  "terms": {
+    "title": "Terms & Conditions",
+    "effectiveDate": "11 August 2025",
+    "lastUpdated": "11 August 2025",
+    "sections": [
+      {
+        "type": "text",
+        "content": "Welcome to **Disport**! These Terms & Conditions outline the rules and regulations for using our website and services. By accessing or purchasing from **Disport**, you agree to comply with and be bound by these terms. Please read them carefully."
+      },
+      {
+        "title": "1. About Disport",
+        "type": "text",
+        "content": "Disport is your go-to destination for premium sports gear, activewear, and equipment. We strive to provide high-quality products to fuel your passion for sports and fitness."
+      },
+      {
+        "title": "2. Eligibility",
+        "type": "list",
+        "items": [
+          "Be at least **18 years old** or have parental/guardian consent.",
+          "Provide accurate and complete personal information."
+        ]
+      },
+      {
+        "title": "3. Account Responsibilities",
+        "type": "list",
+        "items": [
+          "Keep your login details secure.",
+          "Notify us immediately if you detect any unauthorized account activity.",
+          "You are responsible for all activities under your account."
+        ]
+      },
+      {
+        "title": "4. Orders & Payments",
+        "type": "list",
+        "items": [
+          "All orders are subject to availability and confirmation.",
+          "Prices displayed are inclusive of applicable taxes unless stated otherwise.",
+          "We accept secure payment methods including UPI, credit/debit cards, and net banking."
+        ]
+      },
+      {
+        "title": "5. Shipping & Delivery",
+        "type": "list",
+        "items": [
+          "Estimated delivery times are provided during checkout and may vary.",
+          "Disport is not liable for delays caused by courier services or unforeseen events."
+        ]
+      },
+      {
+        "title": "6. Returns & Refunds",
+        "type": "list",
+        "items": [
+          "Products can be returned within **7 days** of delivery if unused and in original packaging.",
+          "Refunds will be processed as per our Return Policy."
+        ]
+      },
+      {
+        "title": "7. Prohibited Uses",
+        "type": "list",
+        "items": [
+          "Use our site for fraudulent or illegal purposes.",
+          "Copy, modify, or distribute our content without permission."
+        ]
+      },
+      {
+        "title": "8. Intellectual Property",
+        "type": "text",
+        "content": "All text, graphics, logos, product images, and designs are the property of **Disport**. Unauthorized use is prohibited."
+      },
+      {
+        "title": "9. Limitation of Liability",
+        "type": "text",
+        "content": "Disport is not responsible for any direct or indirect damages arising from the use of our site or products, except as required by law."
+      },
+      {
+        "title": "10. Changes to Terms",
+        "type": "text",
+        "content": "We may update these Terms & Conditions from time to time. Continued use of our website after updates means you accept the revised terms."
+      }
+    ],
+    "contact": {
+      "address": "123 Sport Street, New Delhi, India",
+      "phone": "+91 98765 43210",
+      "email": "support@sportify.com"
+    },
+    "tagline": "⚡ Disport – Fuel Your Game, Own Your Passion! ⚡"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "effectiveDate": "11 August 2025",
+    "lastUpdated": "11 August 2025",
+    "sections": [
+      {
+        "type": "text",
+        "content": "At **DISPORT CORPORATION**, we value your privacy and are committed to protecting your personal information. This Privacy Policy outlines how we collect, use, and safeguard your data when you visit or purchase from our website."
+      },
+      {
+        "title": "Privacy Policy Statement",
+        "type": "text",
+        "content": "DISPORT CORPORATION is committed to protecting your privacy. We collect and use your personal information only as necessary to provide our products and services, process payments, and improve user experience. We do not sell, rent, or share your personal data with third parties except as required by law or to fulfill our contractual obligations. By using our website, you consent to our data collection and usage practices. For more details, please review our full privacy policy."
+      },
+      {
+        "title": "Terms and Conditions",
+        "type": "text",
+        "content": "By accessing and using the DISPORT CORPORATION website, you agree to comply with our terms and conditions. All content on this website is for informational purposes only. We reserve the right to modify prices, services, and policies at any time without prior notice. Unauthorized use of our content is prohibited. DISPORT CORPORATION is not liable for any direct or indirect damages resulting from the use of our website."
+      },
+      {
+        "title": "Cancellation and Refund Policy",
+        "type": "text",
+        "content": "Orders placed with DISPORT CORPORATION can be canceled within **[X]** hours of purchase. After this period, cancellations may not be possible. Refunds will be processed within **[X]** business days if eligible. Custom-made or personalized products may not be refundable. If you receive a defective or incorrect item, please contact us within **[X]** days of delivery for a resolution."
+      },
+      {
+        "title": "Shipping and Delivery Policy",
+        "type": "text",
+        "content": "DISPORT CORPORATION processes and ships orders within **3** business days. Shipping times may vary based on location and carrier. Customers will receive a tracking number once the order is dispatched. We are not responsible for delays due to unforeseen circumstances. Any customs duties or import taxes are the responsibility of the buyer."
+      }
+    ],
+    "contact": {
+      "address": "123 Sport Street, New Delhi, India",
+      "phone": "+91 98765 43210",
+      "email": "privacy@disport.com"
+    },
+    "tagline": "⚡ Disport – Protecting Your Privacy While Powering Your Game! ⚡"
+  }
+}

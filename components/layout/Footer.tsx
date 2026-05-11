@@ -91,9 +91,9 @@ const Footer = () => {
               © 2026 DISPORT SYSTEM. ALL RIGHTS RESERVED.
             </p>
             <div className="flex items-center gap-6">
-              <Link href="#" className="text-white/10 hover:text-white text-[9px] uppercase tracking-[0.3em] transition-colors">Privacy Policy</Link>
+              <Link href="/document/privacy" className="text-white/10 hover:text-white text-[9px] uppercase tracking-[0.3em] transition-colors">Privacy Policy</Link>
               <span className="text-white/5 text-[10px]">/</span>
-              <Link href="#" className="text-white/10 hover:text-white text-[9px] uppercase tracking-[0.3em] transition-colors">Terms of Service</Link>
+              <Link href="/document/terms" className="text-white/10 hover:text-white text-[9px] uppercase tracking-[0.3em] transition-colors">Terms of Service</Link>
               <span className="text-white/5 text-[10px]">/</span>
               <Link href="#" className="text-white/10 hover:text-white text-[9px] uppercase tracking-[0.3em] transition-colors">Cookie Settings</Link>
             </div>

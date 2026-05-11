@@ -67,12 +67,6 @@ ul {
   list-style: none;
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
-  font-family: var(--font-body);
-}
 
 /* Typography Utilities */
 .text-uppercase { text-transform: uppercase; }

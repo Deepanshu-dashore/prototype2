@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Engineered for movement. Discover Disport's collection of technical activewear and athletic apparel for performance, motion, and speed.",
 };
 
+import HelpingHeader from "@/components/layout/HelpingHeader";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +29,10 @@ export default function RootLayout({
       lang="en"
       className={`${spaceGrotesk.variable} ${lexend.variable} antialiased`}
     >
-      <body className="min-h-screen flex flex-col">{children}</body>
+      <body className="min-h-screen flex flex-col">
+        <HelpingHeader />
+        {children}
+      </body>
     </html>
   );
 }

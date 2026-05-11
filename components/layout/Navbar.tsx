@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, ShoppingBag, User, Menu, X } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
@@ -33,8 +34,8 @@ const Navbar = () => {
   ];
   return (
     <nav 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled ? 'bg-white/80 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-6'
+      className={`sticky top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled ? 'bg-white py-4 shadow-sm' : 'bg-white/95 py-6'
       }`}
     >
       <div className="container flex items-center justify-between">
@@ -45,7 +46,7 @@ const Navbar = () => {
             alt="Disport Logo" 
             fill
             sizes="128px"
-            className={`object-contain transition-all duration-300 ${isScrolled ? '' : 'brightness-0 invert'}`}
+            className={`object-contain transition-all duration-300`}
           />
         </Link>
 
@@ -56,7 +57,7 @@ const Navbar = () => {
               key={link.name} 
               href={link.href}
               className={`text-sm font-bold uppercase tracking-widest hover:text-primary-bright transition-colors ${
-                isScrolled ? 'text-black' : 'text-white'
+                isScrolled ? 'text-black' : 'text-black/80'
               }`}
             >
               {link.name}
@@ -65,19 +66,19 @@ const Navbar = () => {
         </div>
 
         {/* Actions */}
-        <div className={`flex items-center gap-6 ${isScrolled ? 'text-black' : 'text-white'}`}>
+        <div className={`flex items-center gap-6 ${isScrolled ? 'text-black' : 'text-gray-400'}`}>
           <button className="hover:text-primary-bright transition-colors">
             <Search size={20} />
           </button>
-          <button className="hover:text-primary-bright transition-colors">
-            <User size={20} />
-          </button>
-          <button className="relative hover:text-primary-bright transition-colors">
-            <ShoppingBag size={20} />
-            <span className="absolute -top-2 -right-2 bg-primary-bright text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
+          <Link href="/login" className="hover:text-primary-bright transition-colors flex items-center">
+            <Icon icon="mingcute:user-5-line" className="w-6 h-6" />
+          </Link>
+          <Link href="/cart" className="relative hover:text-primary-bright transition-colors flex items-center">
+            <Icon icon="solar:bag-5-broken" className="w-6 h-6" />
+            <span className="absolute -top-1.5 -right-1.5 bg-primary-bright text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
               0
             </span>
-          </button>
+          </Link>
           <button 
             className="lg:hidden hover:text-primary-bright transition-colors"
             onClick={() => setIsMobileMenuOpen(true)}
