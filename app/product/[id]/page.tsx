@@ -5,22 +5,26 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Heart, 
-  ShoppingBag, 
-  Star, 
-  Truck, 
-  ShieldCheck, 
-  RotateCcw, 
-  ChevronRight, 
   Plus, 
   Minus,
   Maximize2,
   Share2,
-  Ruler
+  Ruler,
+  ArrowLeft,
+  Heart,
+  ShoppingBag,
+  Star,
+  ShieldCheck,
+  ChevronRight,
+  ChevronDown,
+  RotateCcw,
+  Truck
 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import ProductCard, { Product } from '@/components/shared/ProductCard';
 import CartPopUpModel from '@/components/shared/CartPopUpModel';
 import LoginPopUpModel from '@/components/shared/LoginPopUpModel';
+import ReviewModal from '@/components/shared/ReviewModal';
 
 // Mock Product Data
 const MOCK_PRODUCT = {
@@ -30,7 +34,21 @@ const MOCK_PRODUCT = {
   price: "$55.00",
   rating: 4.9,
   reviewsCount: 124,
-  description: "Engineered for high-intensity training. The Aero-Dry Performance Tee features our signature moisture-wicking technology and laser-cut ventilation zones to keep you cool when the heat is on.",
+  productDescription: "Engineered for high-intensity training. The Aero-Dry Performance Tee features our signature moisture-wicking technology and laser-cut ventilation zones to keep you cool when the heat is on. Built with a specialized 4-way stretch fabric that moves with your body, ensuring zero restrictions during your most demanding workouts.",
+  specification: [
+    { _id: "1", name: "Fit", value: "Athletic / Slim" },
+    { _id: "2", name: "Material", value: "88% Polyester, 12% Elastane" },
+    { _id: "3", name: "Weight", value: "140g (Size M)" },
+    { _id: "4", name: "Wash Care", value: "Machine wash cold" },
+    { _id: "5", name: "Origin", value: "Imported" },
+    { _id: "6", name: "Technology", value: "Aero-Dry™ V2" }
+  ],
+  productDimensions: "30 x 22 x 1.5 cm",
+  itemModelNumber: "DS-PR-001",
+  itemWeight: 140,
+  genericName: "Sportswear Tee",
+  netQuantity: "1 Unit",
+  whatsInTheBox: ["1 Performance Tee", "Technical Care Guide"],
   details: [
     "Lightweight, breathable 4-way stretch fabric",
     "Anti-odor technology prevents growth of odor-causing microbes",
@@ -52,12 +70,43 @@ const MOCK_PRODUCT = {
     "https://images.unsplash.com/photo-1517836012474-3241e397851a?q=80&w=2070&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2071&auto=format&fit=crop"
   ],
-  colors: [
-    { name: "Stealth Black", hex: "#1a1c1c" },
-    { name: "Hyper Orange", hex: "#ec7700" },
-    { name: "Arctic White", hex: "#ffffff" }
-  ],
-  sizes: ["XS", "S", "M", "L", "XL", "XXL"]
+  variants: [
+    {
+      id: "v1",
+      color: "Stealth Black",
+      images: ["https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop"],
+      sizes: [
+        { id: "s1", size: "XS", stock: 10, price: "$55.00" },
+        { id: "s2", size: "S", stock: 5, price: "$55.00" },
+        { id: "s3", size: "M", stock: 15, price: "$55.00" },
+        { id: "s4", size: "L", stock: 0, price: "$55.00" },
+        { id: "s5", size: "XL", stock: 8, price: "$55.00" },
+        { id: "s6", size: "XXL", stock: 3, price: "$55.00" }
+      ]
+    },
+    {
+      id: "v2",
+      color: "Hyper Orange",
+      images: ["https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=2070&auto=format&fit=crop"],
+      sizes: [
+        { id: "s7", size: "XS", stock: 0, price: "$55.00" },
+        { id: "s8", size: "S", stock: 12, price: "$55.00" },
+        { id: "s9", size: "M", stock: 20, price: "$55.00" },
+        { id: "s10", size: "L", stock: 5, price: "$55.00" },
+        { id: "s11", size: "XL", stock: 0, price: "$55.00" }
+      ]
+    },
+    {
+      id: "v3",
+      color: "Arctic White",
+      images: ["https://images.unsplash.com/photo-1517836012474-3241e397851a?q=80&w=2070&auto=format&fit=crop"],
+      sizes: [
+        { id: "s12", size: "M", stock: 25, price: "$55.00" },
+        { id: "s13", size: "L", stock: 15, price: "$55.00" },
+        { id: "s14", size: "XL", stock: 10, price: "$55.00" }
+      ]
+    }
+  ]
 };
 
 const SIMILAR_PRODUCTS: Product[] = [
@@ -70,12 +119,66 @@ const SIMILAR_PRODUCTS: Product[] = [
 export default function ProductDetailPage() {
   const { id } = useParams();
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedColor, setSelectedColor] = useState(0);
+  const [selectedColor, setSelectedColor] = useState(MOCK_PRODUCT.variants[0].color);
   const [selectedSize, setSelectedSize] = useState("M");
+  const [selectedPrice, setSelectedPrice] = useState(MOCK_PRODUCT.price);
+  const [selectvarid, setSelectvarid] = useState<string | null>(null);
+  const [inStock, setInStock] = useState(true);
+  const [showSizeChart, setShowSizeChart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('details');
   const [showCartModal, setShowCartModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("description");
+  const [expandedSections, setExpandedSections] = useState({
+    description: true,
+    specifications: false,
+    delivery: false,
+    details: false
+  });
+  const [openReviewModal, setOpenReviewModal] = useState(false);
+  const [expandedReviews, setExpandedReviews] = useState<Record<string, boolean>>({});
+  const [reviewsLoading] = useState(false);
+  const [reviewsError] = useState(false);
+
+  const product = MOCK_PRODUCT;
+  const reviewsData = {
+    averageRating: 4.9,
+    totalReviews: 124,
+    averageComfortRating: 4.8,
+    averageQualityRating: 4.9,
+    averageSizeRating: 4.5,
+    reviews: [
+      {
+        _id: "r1",
+        userId: { firstName: "Arjun", lastName: "Mehta" },
+        rating: 5,
+        comment: "The breathability is on another level. I use it for my marathon training and it stays dry throughout the run. Perfect athletic fit.",
+        media: ["https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop"]
+      },
+      {
+        _id: "r2",
+        userId: { firstName: "Sarah", lastName: "Khan" },
+        rating: 4,
+        comment: "Great quality, but runs slightly small. I suggest ordering one size up if you prefer a relaxed fit.",
+        media: []
+      }
+    ]
+  };
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({ ...prev, [section as keyof typeof expandedSections]: !prev[section as keyof typeof expandedSections] }));
+  };
+
+  const capitalize = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+  
+  const toggleReviewDescription = (id: string) => {
+    setExpandedReviews(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const openImageCarousel = (media: string[], index: number) => {
+    console.log("Opening carousel", media, index);
+  };
 
   const handleAddToBag = () => setShowCartModal(true);
   const handleWishlist = () => setShowLoginModal(true);
@@ -160,47 +263,126 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
+              {/* Description */}
               <p className="text-text-secondary text-sm leading-relaxed mb-10 max-w-md">
-                {MOCK_PRODUCT.description}
+                {MOCK_PRODUCT.productDescription}
               </p>
             </div>
 
-            {/* Color Selector */}
-            <div className="mb-8">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-text-secondary/60 mb-4">
-                Color: {MOCK_PRODUCT.colors[selectedColor].name}
-              </h4>
-                <div className="flex gap-4">
-                  {MOCK_PRODUCT.colors.map((color, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setSelectedColor(i)}
-                    className={`w-10 h-10 rounded-full border-2 transition-all p-1 ${selectedColor === i ? 'border-primary-bright ring-2 ring-primary-bright/20' : 'border-transparent'}`}
-                    >
-                    <div className="w-full h-full rounded-full border border-black/10 shadow-inner" style={{ backgroundColor: color.hex }} />
-                    </button>
-                  ))}
-                </div>
+            {/* Colors Section */}
+            <div className="mb-10">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm text-gray-800 font-bold uppercase tracking-widest">Colours</h3>
+                {selectedColor && (
+                  <div className="text-[10px] text-gray-900 font-bold uppercase tracking-widest bg-surface-soft px-3 py-1">
+                    {selectedColor}
+                  </div>
+                )}
               </div>
+              
+              <div className="flex flex-wrap gap-3">
+                {MOCK_PRODUCT.variants.map((variant, i) => {
+                  const isSelected = selectedColor === variant?.color;
+                  const hasStock = variant?.sizes?.some(
+                    (size) => size?.stock > 0
+                  );
+
+                  return (
+                    <button
+                      key={variant?.id || i}
+                      onClick={() => {
+                        if (hasStock) {
+                          setSelectedColor(variant?.color);
+                          if (variant?.sizes && variant.sizes.length > 0) {
+                            const firstAvailableSize = variant.sizes.find(size => size.stock > 0) || variant.sizes[0];
+                            setSelectedSize(firstAvailableSize.size);
+                            setSelectedPrice(firstAvailableSize.price);
+                            setSelectvarid(firstAvailableSize.id);
+                            setInStock(firstAvailableSize.stock > 0);
+                          }
+                        }
+                      }}
+                      disabled={!hasStock}
+                      className={`
+                        relative w-16 aspect-square border transition-all duration-300
+                        ${!hasStock ? "opacity-20 cursor-not-allowed grayscale" : "cursor-pointer hover:border-black"}
+                        ${isSelected ? "border-black scale-105 shadow-md" : "border-transparent bg-surface-soft"}
+                      `}
+                    >
+                      <Image
+                        src={variant.images[0]}
+                        alt={variant?.color}
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
+                      
+                      {isSelected && (
+                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-black" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             {/* Size Selector */}
             <div className="mb-10">
-              <div className="flex justify-between items-center mb-4">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-text-secondary/60">Select Size</h4>
-                <button className="text-[10px] font-bold uppercase tracking-widest text-primary-bright border-b border-primary-bright pb-0.5">Size Guide</button>
+              {selectedColor && (
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm text-gray-800 font-bold uppercase tracking-widest">Sizes</h3>
+                  <div className="text-[10px] text-gray-900 font-bold uppercase tracking-widest bg-surface-soft px-3 py-1">
+                    {!selectedSize
+                      ? "Select size"
+                      : inStock
+                      ? "In Stock"
+                      : "Out of Stock"}
+                  </div>
                 </div>
-              <div className="grid grid-cols-6 gap-2">
-                  {MOCK_PRODUCT.sizes.map((size) => (
+              )}
+
+              <div className="grid grid-cols-6 gap-2 mb-6">
+                {(() => {
+                  const selectedVariant = MOCK_PRODUCT.variants.find(v => v.color === selectedColor);
+                  const sizes = selectedVariant ? selectedVariant.sizes : [];
+                  
+                  return sizes.map((sizeObj) => (
                     <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                    className={`h-12 flex items-center justify-center font-bold text-xs transition-all border ${selectedSize === size ? 'bg-black text-white border-black shadow-lg translate-y-[-2px]' : 'bg-surface-soft text-black border-transparent hover:border-black/20'}`}
+                      key={sizeObj.id}
+                      disabled={sizeObj.stock === 0}
+                      onClick={() => {
+                        setSelectedSize(sizeObj.size);
+                        setSelectedPrice(sizeObj.price);
+                        setSelectvarid(sizeObj.id);
+                        setInStock(sizeObj.stock > 0);
+                      }}
+                      className={`h-12 flex items-center justify-center font-bold text-xs transition-all border 
+                        ${selectedSize === sizeObj.size 
+                          ? 'bg-black text-white border-black shadow-lg translate-y-[-2px]' 
+                          : sizeObj.stock === 0 
+                            ? 'bg-gray-100 text-gray-300 border-transparent cursor-not-allowed' 
+                            : 'bg-surface-soft text-black border-transparent hover:border-black/20'}`}
                     >
-                      {size}
+                      {sizeObj.size}
                     </button>
-                  ))}
-                </div>
+                  ));
+                })()}
               </div>
+
+              {/* Size Guide */}
+              <button
+                onClick={() => setShowSizeChart(true)}
+                className="text-gray-700 text-xs font-normal hover:text-black flex items-center gap-2 group transition-colors"
+              >
+                <div className="w-8 h-8 flex items-center justify-center bg-surface-soft rounded-full group-hover:bg-black group-hover:text-white transition-all">
+                  <Icon
+                    icon="emojione-monotone:straight-ruler"
+                    className="w-5 h-5 -rotate-45"
+                  />
+                </div>
+                <span className="underline uppercase tracking-widest font-bold text-[10px]">Size Guide</span>
+              </button>
+            </div>
 
             {/* Quantity & Add to Cart */}
             <div className="flex flex-col gap-4 mt-auto">
@@ -212,7 +394,7 @@ export default function ProductDetailPage() {
                   </div>
                   <button 
                     onClick={handleAddToBag}
-                  className="flex-1 bg-primary-bright text-white font-bold uppercase tracking-[0.15em] flex items-center justify-center space-x-3 hover:bg-primary transition-all shadow-xl hover:shadow-primary-bright/20"
+                  className="flex-1 bg-primary-bright text-white font-semibold uppercase flex items-center justify-center space-x-3 hover:bg-primary transition-all shadow-xl hover:shadow-primary-bright/20 text-sm"
                   >
                     <ShoppingBag size={20} />
                     <span>Add to Bag</span>
@@ -220,10 +402,11 @@ export default function ProductDetailPage() {
                 </div>
                 <button 
                   onClick={handleWishlist}
-                className="h-14 border-2 border-black font-bold uppercase tracking-[0.15em] flex items-center justify-center space-x-3 hover:bg-black hover:text-white transition-all"
+                  className="h-14 border border-black/10 font-semibold uppercase text-sm flex items-center justify-center gap-3 hover:bg-black hover:text-white transition-all duration-500 group relative overflow-hidden"
                 >
-                <Heart size={20} />
+                  <Icon icon="solar:heart-linear" className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   <span>Add to Wishlist</span>
+                  <div className="absolute inset-0 bg-black/5 opacity-0 group-active:opacity-100 transition-opacity" />
                 </button>
             </div>
 
@@ -245,86 +428,321 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Technical Tabs Section */}
-        <div className="mt-40">
-          <div className="flex border-b border-border mb-16 overflow-x-auto no-scrollbar">
-            {['details', 'specifications', 'reviews'].map((tab) => (
+        {/* Product Description & Reviews Section */}
+        <div className="mt-40 max-w-7xl mx-auto w-full flex flex-col border border-gray-200 rounded-lg overflow-hidden bg-white">
+          <div className="flex items-center gap-8 border-b border-gray-200 px-8 py-4 overflow-x-auto no-scrollbar bg-white">
+            {["description", "reviews"].map((item) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-10 py-6 font-bold uppercase tracking-[0.3em] text-[10px] transition-all relative ${activeTab === tab ? 'text-black' : 'text-text-secondary/40 hover:text-black'}`}
+                key={item}
+                onClick={() => setSelectedTab(item)}
+                className={`relative pb-2 text-sm font-semibold transition-all ${
+                  selectedTab === item ? "text-black" : "text-gray-500 hover:text-black"
+                }`}
               >
-                {tab}
-                {activeTab === tab && <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-1 bg-primary-bright" />}
+                {item === "description"
+                  ? "Description"
+                  : `Reviews (${reviewsData.totalReviews})`}
+
+                {/* underline with motion */}
+                {selectedTab === item && (
+                  <motion.span
+                    layoutId="tab-underline"
+                    className="absolute left-0 bottom-0 h-[2px] w-full bg-black"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
               </button>
             ))}
           </div>
 
-          <div className="min-h-[400px]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-              >
-                {activeTab === 'details' && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
-                    <div className="space-y-10">
-                      <h3 className="text-3xl font-bold uppercase tracking-tighter">Engineered For Motion</h3>
-                      <p className="text-text-secondary text-sm leading-relaxed max-w-xl">
-                        The Aero-Dry™ technology is built for the athlete who doesn't compromise. Every fiber is treated to handle peak perspiration levels while maintaining a feather-light feel against the skin.
-                      </p>
-                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6">
-                        {MOCK_PRODUCT.details.map((detail, i) => (
-                          <li key={i} className="flex items-start gap-4 p-4 bg-surface-soft group hover:bg-black transition-all">
-                            <Plus size={14} className="text-primary-bright mt-1 group-hover:rotate-90 transition-transform" />
-                            <span className="text-text-secondary group-hover:text-white text-[11px] font-bold uppercase tracking-wider">{detail}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="relative aspect-video bg-surface-soft overflow-hidden">
-                      <Image src="https://images.unsplash.com/photo-1517836012474-3241e397851a?q=80&w=2070&auto=format&fit=crop" alt="Lab Test" fill className="object-cover grayscale hover:grayscale-0 transition-all duration-1000" />
-                      <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                        <span className="text-white text-[10px] font-bold uppercase tracking-[0.4em] bg-black/40 backdrop-blur-md px-6 py-2">View Lab Video</span>
+          {selectedTab === "description" ? (
+            <div className="bg-white">
+              {/* Description Accordion */}
+              <div className="border-b border-gray-100">
+                <button
+                  onClick={() => toggleSection("description")}
+                  className="w-full flex items-center justify-between px-8 py-5 hover:bg-gray-50/50 transition-colors"
+                >
+                  <span className={`text-base font-medium ${expandedSections.description ? "text-primary-bright" : "text-gray-600"}`}>
+                    Description
+                  </span>
+                  <motion.div
+                    animate={{ rotate: expandedSections.description ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ChevronDown size={20} className={expandedSections.description ? "text-primary-bright" : "text-gray-600"} />
+                  </motion.div>
+                </button>
+                <AnimatePresence>
+                  {expandedSections.description && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-8 pb-8 space-y-6">
+                        <p className="text-sm text-gray-600 leading-relaxed max-w-4xl">
+                          {product.productDescription}
+                        </p>
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-bold text-gray-800">Key Features:</h4>
+                          <ul className="space-y-2 list-disc list-inside">
+                            {[
+                              "Crafted from premium materials for long-lasting durability.",
+                              "Versatile design suitable for multiple purposes.",
+                              "Lightweight yet sturdy for comfortable everyday use.",
+                              "Available in a variety of colors to suit different styles.",
+                              "Backed by a trusted manufacturer warranty."
+                            ].map((feature, i) => (
+                              <li key={i} className="text-sm text-gray-600 pl-1">
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Specifications Accordion */}
+              <div className="border-b border-gray-100">
+                <button
+                  onClick={() => toggleSection("specifications")}
+                  className="w-full flex items-center justify-between px-8 py-5 hover:bg-gray-50/50 transition-colors"
+                >
+                  <span className={`text-base font-medium ${expandedSections.specifications ? "text-primary-bright" : "text-gray-600"}`}>
+                    Specifications
+                  </span>
+                  <motion.div
+                    animate={{ rotate: expandedSections.specifications ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ChevronDown size={20} className={expandedSections.specifications ? "text-primary-bright" : "text-gray-600"} />
+                  </motion.div>
+                </button>
+                <AnimatePresence>
+                  {expandedSections.specifications && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-8 pb-8">
+                        <div className="border border-gray-200 rounded-sm overflow-hidden max-w-2xl">
+                          <table className="w-full text-sm border-collapse">
+                            <thead>
+                              <tr className="bg-gray-700 text-white">
+                                <th className="p-3 text-left w-1/3">Attribute</th>
+                                <th className="p-3 text-left">Value</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                              {product.specification.map((spec, i) => (
+                                <tr key={i} className="hover:bg-gray-50 transition-colors">
+                                  <td className="p-3 font-medium text-gray-800 border-r border-gray-200">{spec.name}</td>
+                                  <td className="p-3 text-gray-600">{spec.value}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Delivery Accordion */}
+              <div className="border-b border-gray-100">
+                <button
+                  onClick={() => toggleSection("delivery")}
+                  className="w-full flex items-center justify-between px-8 py-5 hover:bg-gray-50/50 transition-colors"
+                >
+                  <span className={`text-base font-medium ${expandedSections.delivery ? "text-primary-bright" : "text-gray-600"}`}>
+                    Delivery & Returns
+                  </span>
+                  <motion.div
+                    animate={{ rotate: expandedSections.delivery ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ChevronDown size={20} className={expandedSections.delivery ? "text-primary-bright" : "text-gray-600"} />
+                  </motion.div>
+                </button>
+                <AnimatePresence>
+                  {expandedSections.delivery && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-8 pb-8 space-y-4">
+                        <p className="text-sm text-gray-600">
+                          Your order of ₹500 or more gets free standard delivery.
+                        </p>
+                        <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+                          <li>Standard delivery: 4–5 Business Days</li>
+                          <li>Express delivery: 2–4 Business Days</li>
+                          <li>Orders are processed Mon–Fri (excluding holidays)</li>
+                        </ul>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Technical Details Accordion */}
+              <div>
+                <button
+                  onClick={() => toggleSection("details")}
+                  className="w-full flex items-center justify-between px-8 py-5 hover:bg-gray-50/50 transition-colors"
+                >
+                  <span className={`text-base font-medium ${expandedSections.details ? "text-primary-bright" : "text-gray-600"}`}>
+                    Product Details
+                  </span>
+                  <motion.div
+                    animate={{ rotate: expandedSections.details ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ChevronDown size={20} className={expandedSections.details ? "text-primary-bright" : "text-gray-600"} />
+                  </motion.div>
+                </button>
+                <AnimatePresence>
+                  {expandedSections.details && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-8 pb-8 space-y-4">
+                        <ul className="text-sm text-gray-600 list-disc list-inside space-y-2">
+                          <li><span className="font-semibold text-gray-800">Dimensions:</span> {product.productDimensions}</li>
+                          <li><span className="font-semibold text-gray-800">Model Number:</span> {product.itemModelNumber}</li>
+                          <li><span className="font-semibold text-gray-800">Weight:</span> {product.itemWeight}g</li>
+                          <li><span className="font-semibold text-gray-800">Generic Name:</span> {product.genericName}</li>
+                          <li><span className="font-semibold text-gray-800">Net Quantity:</span> {product.netQuantity}</li>
+                        </ul>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white p-8">
+              <div className="space-y-12">
+                {/* Average Rating Dashboard */}
+                <div className="p-8 bg-gray-50/50 border border-gray-100 rounded-sm">
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-12">
+                    <div className="flex items-center gap-8">
+                      <div className="text-6xl font-bold tracking-tighter text-gray-900 border-r border-gray-200 pr-8">
+                        {reviewsData.averageRating.toFixed(1)}
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star key={star} size={18} className={star <= Math.round(reviewsData.averageRating) ? "fill-primary-bright text-primary-bright" : "text-gray-200"} />
+                          ))}
+                        </div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
+                          Based on {reviewsData.totalReviews} Customer Reviews
+                        </p>
                       </div>
                     </div>
-                  </div>
-                )}
-                
-                {activeTab === 'specifications' && (
-               <div className="max-w-2xl">
-                  <div className="grid grid-cols-2 py-4 border-b border-border">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary/60">Fit</span>
-                    <span className="text-sm font-bold">Athletic / Slim</span>
-                          </div>
-                  <div className="grid grid-cols-2 py-4 border-b border-border">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary/60">Material</span>
-                    <span className="text-sm font-bold">88% Polyester, 12% Elastane</span>
-                  </div>
-                  <div className="grid grid-cols-2 py-4 border-b border-border">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary/60">Weight</span>
-                    <span className="text-sm font-bold">140g (Size M)</span>
-                  </div>
-                  <div className="grid grid-cols-2 py-4 border-b border-border">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary/60">Wash Care</span>
-                    <span className="text-sm font-bold">Machine wash cold, tumble dry low</span>
-                     </div>
-                   </div>
-                )}
 
-                {activeTab === 'reviews' && (
-              <div className="text-center py-20 bg-surface-soft border-2 border-dashed border-border">
-                <h3 className="text-xl font-bold uppercase tracking-tight mb-2">No Reviews Yet</h3>
-                <p className="text-text-secondary text-sm mb-8">Be the first to test this gear and share your feedback.</p>
-                <button className="bg-black text-white px-8 py-4 font-bold uppercase tracking-widest text-xs hover:bg-primary-bright transition-colors">Write a Review</button>
+                    <button
+                      onClick={() => setOpenReviewModal(true)}
+                      className="bg-black text-white px-8 py-4 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-primary-bright transition-all flex items-center gap-3 group"
+                    >
+                      <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                      Write Performance Review
+                    </button>
                   </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+
+                  {/* Technical Attribute Sliders */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-12">
+                    {[
+                      { label: "Comfort", value: reviewsData.averageComfortRating, min: "Firm", max: "Plush" },
+                      { label: "Quality", value: reviewsData.averageQualityRating, min: "Standard", max: "Elite" },
+                      { label: "Size", value: reviewsData.averageSizeRating, min: "Small", max: "Large" }
+                    ].map((attr, i) => (
+                      <div key={i} className="space-y-3">
+                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-900">{attr.label}</h4>
+                        <div className="relative w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(attr.value / 5) * 100}%` }}
+                            className="absolute inset-0 bg-primary-bright"
+                          />
+                        </div>
+                        <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest text-gray-400">
+                          <span>{attr.min}</span>
+                          <span>{attr.max}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Customer Reviews Feed */}
+                <div className="space-y-8">
+                  <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-8 border-b border-gray-100 pb-4">
+                    Latest Assessments
+                  </h2>
+
+                  {reviewsLoading ? (
+                    <div className="text-center py-20 uppercase tracking-[0.4em] text-gray-400 text-[10px] animate-pulse">Loading Feed...</div>
+                  ) : (
+                    <div className="divide-y divide-gray-50">
+                      {reviewsData.reviews.map((review, index) => (
+                        <div key={index} className="py-10 first:pt-0 group">
+                          <div className="flex flex-col md:flex-row gap-8">
+                            <div className="md:w-1/4 space-y-4">
+                              <div className="space-y-1">
+                                <h5 className="text-[11px] font-bold uppercase tracking-widest text-gray-900">
+                                  {review.userId.firstName} {review.userId.lastName}
+                                </h5>
+                                <div className="flex items-center gap-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star key={star} size={10} className={star <= review.rating ? "fill-black text-black" : "text-gray-200"} />
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <ShieldCheck size={12} className="text-green-600" />
+                                <span className="text-[8px] font-bold uppercase tracking-widest text-green-600">Verified Athlete</span>
+                              </div>
+                            </div>
+                            
+                            <div className="md:w-3/4 space-y-6">
+                              <p className="text-sm text-gray-600 leading-relaxed font-medium">
+                                "{review.comment}"
+                              </p>
+                              
+                              {review.media.length > 0 && (
+                                <div className="flex gap-4">
+                                  {review.media.map((mediaUrl, i) => (
+                                    <div key={i} className="relative w-24 aspect-square rounded-sm overflow-hidden cursor-zoom-in group-hover:shadow-xl transition-all">
+                                      <Image src={mediaUrl} alt="Review" fill className="object-cover grayscale hover:grayscale-0 transition-all duration-500" />
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Similar Products - Editorial Composition */}
@@ -352,12 +770,18 @@ export default function ProductDetailPage() {
         onClose={() => setShowCartModal(false)} 
         product={MOCK_PRODUCT}
         selectedSize={selectedSize}
-        price={MOCK_PRODUCT.price}
+        price={selectedPrice}
       />
 
       <LoginPopUpModel 
         open={showLoginModal} 
         onClose={() => setShowLoginModal(false)} 
+      />
+
+      <ReviewModal
+        open={openReviewModal}
+        onClose={() => setOpenReviewModal(false)}
+        product={MOCK_PRODUCT}
       />
     </>
   );
