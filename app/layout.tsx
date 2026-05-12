@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Engineered for movement. Discover Disport's collection of technical activewear and athletic apparel for performance, motion, and speed.",
 };
 
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import HelpingHeader from "@/components/layout/HelpingHeader";
 
 export default function RootLayout({
@@ -29,9 +31,13 @@ export default function RootLayout({
       lang="en"
       className={`${spaceGrotesk.variable} ${lexend.variable} antialiased`}
     >
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col bg-white">
         <HelpingHeader />
-        {children}
+        <Navbar />
+        <div className="flex-grow">
+          {children}
+        </div>
+        <Footer />
       </body>
     </html>
   );

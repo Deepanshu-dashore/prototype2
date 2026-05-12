@@ -1,10 +1,8 @@
-import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/home/Hero";
 import CategorySection from "@/components/home/CategorySection";
 import ProductGrid from "@/components/shared/ProductGrid";
 import BrandStory from "@/components/home/BrandStory";
 import Newsletter from "@/components/home/Newsletter";
-import Footer from "@/components/layout/Footer";
 
 const trendingProducts = [
   {
@@ -14,7 +12,8 @@ const trendingProducts = [
     price: "$55.00",
     image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop",
     imageAlt: "Aero-Dry Performance Tee",
-    rating: 4.9
+    rating: 4.9,
+    isNew: true
   },
   {
     id: 2,
@@ -23,7 +22,8 @@ const trendingProducts = [
     price: "$180.00",
     image: "/disport_sneakers_product_1778407255046.png",
     imageAlt: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop",
-    rating: 5.0
+    rating: 5.0,
+    isNew: true
   },
   {
     id: 3,
@@ -41,7 +41,8 @@ const trendingProducts = [
     price: "$120.00",
     image: "https://images.unsplash.com/photo-1511402339625-5942682714cd?q=80&w=2070&auto=format&fit=crop",
     imageAlt: "Core Tech Windstopper",
-    rating: 4.7
+    rating: 4.7,
+    discount: "20% OFF"
   }
 ];
 
@@ -86,15 +87,21 @@ const bestSellers = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      <Navbar />
+    <>
       <Hero />
       <CategorySection />
-      <ProductGrid title="Trending Now" products={trendingProducts} />
+      <ProductGrid 
+        title="Trending Now" 
+        subtitle="The Latest Gear"
+        products={trendingProducts} 
+      />
       <BrandStory />
-      <ProductGrid title="Best Sellers" products={bestSellers} />
+      <ProductGrid 
+        title="Best Sellers" 
+        subtitle="Fan Favorites"
+        products={bestSellers} 
+      />
       <Newsletter />
-      <Footer />
-    </main>
+    </>
   );
 }

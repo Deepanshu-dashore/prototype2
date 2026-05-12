@@ -48,12 +48,12 @@ const Navbar = () => {
       <div className="container grid grid-cols-3 items-center">
         {/* Column 1: Logo */}
         <div className="flex justify-start">
-          <Link href="/" className="relative w-32 h-10">
+          <Link href="/" className="relative w-40 h-10">
             <Image 
-              src="/DISPORT LOGOS/logo-Small.webp" 
+              src="/DISPORT LOGOS/LOGO.webp" 
               alt="Disport Logo" 
               fill
-              sizes="128px"
+              sizes="160px"
               className={`object-contain transition-all duration-300`}
             />
           </Link>

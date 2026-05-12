@@ -1,113 +1,140 @@
 "use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Instagram, Twitter, Facebook, Youtube } from '@/components/shared/BrandIcons';
+import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Icon } from "@iconify/react";
 
-const Footer = () => {
-  const footerLinks = [
-    {
-      title: 'Products',
-      links: [
-        { name: 'Men', href: '#' },
-        { name: 'Women', href: '#' },
-        { name: 'New Arrivals', href: '#' },
-        { name: 'Collections', href: '#' },
-        { name: 'Sale', href: '#' },
-      ],
-    },
-    {
-      title: 'Support',
-      links: [
-        { name: 'Shipping', href: '#' },
-        { name: 'Returns', href: '#' },
-        { name: 'Size Guide', href: '#' },
-        { name: 'Track Order', href: '#' },
-        { name: 'Contact', href: '#' },
-      ],
-    },
-    {
-      title: 'Company',
-      links: [
-        { name: 'Our Story', href: '#' },
-        { name: 'Careers', href: '#' },
-        { name: 'Sustainability', href: '#' },
-        { name: 'Press', href: '#' },
-        { name: 'Store Locator', href: '#' },
-      ],
-    },
+export default function Footer() {
+  const shopLinks = [
+    { name: "Men's Sportswear", href: "#" },
+    { name: "Women's Sportswear", href: "#" },
+    { name: "Shoes", href: "#" },
+    { name: "Accessories", href: "#" },
+    { name: "New Arrivals", href: "#" },
+  ];
+
+  const supportLinks = [
+    { name: "Contact Us", href: "#" },
+    { name: "Shipping Info", href: "#" },
+    { name: "Returns & Exchanges", href: "#" },
+    { name: "FAQs", href: "#" },
+    { name: "Size Guide", href: "#" },
+  ];
+
+  const companyLinks = [
+    { name: 'Our Story', href: '#' },
+    { name: 'Careers', href: '#' },
+    { name: 'Sustainability', href: '#' },
+    { name: 'Press', href: '#' },
+    { name: 'Store Locator', href: '#' },
+  ];
+
+  const socialLinks = [
+    { icon: "basil:facebook-outline", href: "#" },
+    { icon: "iconoir:instagram", href: "#" },
+    { icon: "mynaui:twitter", href: "#" },
+    { icon: "iconoir:youtube", href: "#" },
+  ];
+
+  const contactInfo = [
+    { icon: "carbon:location", text: "123 Sport Street, New Delhi, India" },
+    { icon: "carbon:phone", text: "+91 98765 43210" },
+    { icon: "carbon:email", text: "support@disport.com" },
   ];
 
   return (
-    <footer className="bg-black text-white pt-20 pb-10 border-t border-white/10">
-      <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-16 mb-24">
-          {/* Logo and About */}
-          <div className="lg:col-span-4">
-            <Link href="/" className="relative w-48 h-12 mb-10 block">
-              <Image 
-                src="/DISPORT LOGOS/LOGO.webp" 
-                alt="Disport Logo" 
-                fill
-                sizes="192px"
-                className="object-contain object-left"
-              />
-            </Link>
-            <p className="text-white/40 max-w-sm mb-10 leading-relaxed text-sm uppercase tracking-widest">
-              Premium high-performance sportswear engineered for movement and technical precision. Redefining the limits of athletic gear.
-            </p>
-            <div className="flex gap-8">
-              <Link href="#" className="text-white/40 hover:text-primary-bright transition-all duration-300 transform hover:scale-110"><Instagram size={22} /></Link>
-              <Link href="#" className="text-white/40 hover:text-primary-bright transition-all duration-300 transform hover:scale-110"><Twitter size={22} /></Link>
-              <Link href="#" className="text-white/40 hover:text-primary-bright transition-all duration-300 transform hover:scale-110"><Facebook size={22} /></Link>
-              <Link href="#" className="text-white/40 hover:text-primary-bright transition-all duration-300 transform hover:scale-110"><Youtube size={22} /></Link>
-            </div>
-          </div>
-
-          {/* Links */}
-          <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-12">
-            {footerLinks.map((section) => (
-              <div key={section.title}>
-                <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 mb-8">{section.title}</h4>
-                <ul className="flex flex-col gap-5">
-                  {section.links.map((link) => (
-                    <li key={link.name}>
-                      <Link href={link.href} className="text-white/50 hover:text-primary-bright text-[11px] font-bold transition-all uppercase tracking-[0.2em] block">
-                        {link.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+    <footer className="bg-[#f9f9f9] text-gray-700 border-t border-gray-200">
+      <div className="max-w-[90dvw] mx-auto py-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-12">
+        
+        {/* Logo & About */}
+        <div className="space-y-6 lg:col-span-2 sm:col-span-2 md:col-span-3 lg:col-auto">
+          <Link href="/" className="relative w-40 h-10 block">
+            <Image 
+              src="/DISPORT LOGOS/LOGO.webp" 
+              alt="Disport Logo" 
+              width={160}
+              height={40}
+              className="h-10 object-contain w-auto" 
+            />
+          </Link>
+          <p className="text-sm leading-relaxed text-gray-500 font-medium">
+            Your one-stop shop for premium sports gear, apparel, and accessories.
+            We bring quality and performance to every athlete.
+          </p>
+          <div className="flex space-x-5">
+            {socialLinks.map((social, idx) => (
+              <Link key={idx} href={social.href} className="text-gray-400 hover:text-primary-bright transition-colors">
+                <Icon icon={social.icon} width="22" height="22" />
+              </Link>
             ))}
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-12 border-t border-white/5 flex flex-col lg:flex-row justify-between items-center gap-8">
-          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-12">
-            <p className="text-white/20 text-[9px] uppercase tracking-[0.3em]">
-              © 2026 DISPORT SYSTEM. ALL RIGHTS RESERVED.
-            </p>
-            <div className="flex items-center gap-6">
-              <Link href="/document/privacy" className="text-white/10 hover:text-white text-[9px] uppercase tracking-[0.3em] transition-colors">Privacy Policy</Link>
-              <span className="text-white/5 text-[10px]">/</span>
-              <Link href="/document/terms" className="text-white/10 hover:text-white text-[9px] uppercase tracking-[0.3em] transition-colors">Terms of Service</Link>
-              <span className="text-white/5 text-[10px]">/</span>
-              <Link href="#" className="text-white/10 hover:text-white text-[9px] uppercase tracking-[0.3em] transition-colors">Cookie Settings</Link>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 opacity-20 grayscale brightness-200">
-            {/* Payment Icons Placeholder - using small text labels as minimal indicators */}
-            <span className="text-[8px] font-bold border border-white/50 px-2 py-1 rounded">VISA</span>
-            <span className="text-[8px] font-bold border border-white/50 px-2 py-1 rounded">MASTERCARD</span>
-            <span className="text-[8px] font-bold border border-white/50 px-2 py-1 rounded">APPLE PAY</span>
-          </div>
+        {/* Shop Links */}
+        <div>
+          <h3 className="font-bold text-lg mb-6 text-gray-900">Shop</h3>
+          <ul className="space-y-3">
+            {shopLinks.map((link) => (
+              <li key={link.name}>
+                <Link href={link.href} className="text-sm text-gray-600 hover:text-primary-bright transition-colors">
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Support Links */}
+        <div>
+          <h3 className="font-bold text-lg mb-6 text-gray-900">Support</h3>
+          <ul className="space-y-3">
+            {supportLinks.map((link) => (
+              <li key={link.name}>
+                <Link href={link.href} className="text-sm text-gray-600 hover:text-primary-bright transition-colors">
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Company Links */}
+        <div>
+          <h3 className="font-bold text-lg mb-6 text-gray-900">Company</h3>
+          <ul className="space-y-3">
+            {companyLinks.map((link) => (
+              <li key={link.name}>
+                <Link href={link.href} className="text-sm text-gray-600 hover:text-primary-bright transition-colors">
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Get in Touch */}
+        <div className="lg:col-span-2">
+          <h3 className="font-bold text-lg mb-6 text-gray-900">Get in Touch</h3>
+          <ul className="space-y-4">
+            {contactInfo.map((item, idx) => (
+              <li key={idx} className="flex items-start gap-3">
+                <Icon icon={item.icon} className="text-primary-bright mt-1 flex-shrink-0" width="20" height="20" />
+                <span className="text-sm text-gray-600 leading-snug">{item.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-gray-200 py-6">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p className="text-xs text-gray-400 tracking-wider">
+            © {new Date().getFullYear()} DISPORT. ALL RIGHTS RESERVED.
+          </p>
         </div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}
