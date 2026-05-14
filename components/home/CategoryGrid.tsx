@@ -64,7 +64,7 @@ const categories = [
   }
 ];
 
-const CategoryGrid = () => {
+const CategoryGrid = () => {  
   return (
     <section className="pb-[120px] bg-[var(--color-background)] overflow-hidden max-[1024px]:py-[80px]">
       <div className="container mx-auto px-4">
