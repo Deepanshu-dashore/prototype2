@@ -93,7 +93,7 @@ export default function Home() {
       <HeroSlider />
       <TrustBar />
       <CategoryGrid />
-      <CategorySection />
+      {/* <CategorySection /> */}
       <ProductGrid 
         title="Trending Now" 
         subtitle="The Latest Gear"

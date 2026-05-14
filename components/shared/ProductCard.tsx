@@ -44,16 +44,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) =>
           className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
         />
 
-        {/* Badges */}
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+        {/* Badges — flat sharp rectangles, stacked top-0 left-0 */}
+        <div className="absolute top-0 left-0 z-10 flex flex-col">
           {product.isNew && (
-            <span className="bg-black text-white text-[10px] font-bold px-3 py-1 uppercase tracking-widest">
-              New
+            <span className="bg-[#964900] text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-wider">
+              Just In
             </span>
           )}
           {product.discount && (
-            <span className="bg-primary-bright text-white text-[10px] font-bold px-3 py-1 uppercase tracking-widest">
-              {product.discount}
+            <span className="bg-[#ba1a1a] text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-wider">
+              {product.discount} Off
             </span>
           )}
         </div>
@@ -96,31 +96,39 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) =>
         </AnimatePresence>
       </div>
 
-      {/* Product Details - Editorial Spacing */}
-      <div className="flex flex-col text-left px-1">
-        <div className="flex justify-between items-center mb-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-secondary/60">
-            {product.category}
-          </span>
+      {/* Product Details */}
+      <div className="flex flex-col pt-4 pb-2 px-1 gap-0.5">
+        <div className="flex justify-between items-start">
+          <div className="flex flex-col flex-1 min-w-0">
+            <h3 className="text-[15px] md:text-[16px] font-bold text-black uppercase tracking-tight leading-tight line-clamp-1 group-hover:text-primary-bright transition-colors font-heading">
+              {product.name}
+            </h3>
+            <p className="text-[13px] md:text-[14px] text-gray-500 font-medium">
+              {product.category}
+            </p>
+          </div>
+          <div className="text-right ml-2">
+            <span className="text-[15px] md:text-[16px] font-bold text-black tracking-tight">
+              {product.price}
+            </span>
+          </div>
+        </div>
+
+        {/* Color Variants & Rating */}
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full bg-black border border-gray-200" />
+              <div className="w-3 h-3 rounded-full bg-gray-300 border border-gray-200" />
+            </div>
+            <span className="text-[11px] text-gray-400 font-bold uppercase ml-1 tracking-tighter">
+              +3 Colors
+            </span>
+          </div>
           <div className="flex items-center space-x-1 opacity-60">
             <Star size={10} className="fill-black text-black" />
             <span className="text-[10px] font-bold tracking-tighter">{product.rating}</span>
           </div>
-        </div>
-        
-        <h3 className="text-black font-bold text-sm md:text-base uppercase tracking-tight mb-2 group-hover:text-primary-bright transition-colors line-clamp-1">
-          {product.name}
-        </h3>
-        
-        <div className="flex items-center gap-3">
-          <span className="text-black font-bold text-lg md:text-xl tracking-tighter">
-            {product.price}
-          </span>
-          {product.discount && (
-            <span className="text-text-secondary/40 line-through text-sm font-medium">
-              $99.00
-            </span>
-          )}
         </div>
       </div>
     </Link>
