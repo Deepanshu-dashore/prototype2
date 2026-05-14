@@ -1,4 +1,6 @@
-import Hero from "@/components/home/Hero";
+import HeroSlider from "@/components/home/HeroSlider";
+import TrustBar from "@/components/home/TrustBar";
+import CategoryGrid from "@/components/home/CategoryGrid";
 import CategorySection from "@/components/home/CategorySection";
 import ProductGrid from "@/components/shared/ProductGrid";
 import BrandStory from "@/components/home/BrandStory";
@@ -88,7 +90,9 @@ const bestSellers = [
 export default function Home() {
   return (
     <>
-      <Hero />
+      <HeroSlider />
+      <TrustBar />
+      <CategoryGrid />
       <CategorySection />
       <ProductGrid 
         title="Trending Now" 
