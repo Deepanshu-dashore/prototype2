@@ -13,6 +13,7 @@ const trendingProducts = [
     category: "TRAINING",
     price: "$55.00",
     image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop",
+    hoverImage: "https://images.unsplash.com/photo-1517838577597-4712306aa13a?q=80&w=2070&auto=format&fit=crop",
     imageAlt: "Aero-Dry Performance Tee",
     rating: 4.9,
     isNew: true
@@ -23,7 +24,8 @@ const trendingProducts = [
     category: "RUNNING",
     price: "$180.00",
     image: "/disport_sneakers_product_1778407255046.png",
-    imageAlt: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop",
+    hoverImage: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop",
+    imageAlt: "Velocity V2 Sneakers",
     rating: 5.0,
     isNew: true
   },
@@ -55,6 +57,7 @@ const bestSellers = [
     category: "RUNNING",
     price: "$160.00",
     image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?q=80&w=2070&auto=format&fit=crop",
+    hoverImage: "https://images.unsplash.com/photo-1512327428752-64345224594c?q=80&w=2070&auto=format&fit=crop",
     imageAlt: "Ignite Foam Runners",
     rating: 4.9
   },

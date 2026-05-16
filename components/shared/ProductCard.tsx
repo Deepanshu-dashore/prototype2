@@ -36,13 +36,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) =>
     >
       {/* Image Container - Technical Minimalism */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface-soft mb-5 group-hover:shadow-xl transition-all duration-500">
+        {/* Base Image */}
         <Image
-          src={(isHovered && product.hoverImage) ? product.hoverImage : product.image}
+          src={product.image}
           alt={product.imageAlt}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+          className={`object-cover transition-all duration-1000 ease-out ${
+            isHovered && product.hoverImage ? 'opacity-0 scale-110' : 'opacity-100 scale-100'
+          }`}
         />
+
+        {/* Hover Image - Fades in on hover */}
+        {product.hoverImage && (
+          <Image
+            src={product.hoverImage}
+            alt={product.imageAlt}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className={`object-cover transition-all duration-1000 ease-out absolute inset-0 ${
+              isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+            }`}
+          />
+        )}
 
         {/* Badges — flat sharp rectangles, stacked top-0 left-0 */}
         <div className="absolute top-0 left-0 z-10 flex flex-col">
