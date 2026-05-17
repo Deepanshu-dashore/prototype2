@@ -5,6 +5,7 @@ import CategorySection from "@/components/home/CategorySection";
 import ProductGrid from "@/components/shared/ProductGrid";
 import BrandStory from "@/components/home/BrandStory";
 import Newsletter from "@/components/home/Newsletter";
+import BannerSlider from "@/components/home/BannerSlider";
 
 const trendingProducts = [
   {
@@ -101,8 +102,10 @@ export default function Home() {
         title="Trending Now" 
         subtitle="Experience the latest in high-performance innovation and athletic style."
         products={trendingProducts} 
+        showRating={false}
       />
-      <BrandStory />
+      <BannerSlider />
+      {/* <BrandStory /> */}
       <ProductGrid 
         title="Best Sellers" 
         subtitle="Our highest-rated, most demanded gear engineered for everyday excellence."

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
@@ -65,10 +65,36 @@ const categories = [
 ];
 
 const CategoryGrid = () => {  
+  const [activeIndex, setActiveIndex] = useState(0);
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (!sliderRef.current) return;
+    const container = sliderRef.current;
+    const cardWidth = container.querySelector('.snap-start')?.clientWidth || 300;
+    const gap = 32; // gap-8 is 32px
+    const scrollAmount = direction === 'left' ? -(cardWidth + gap) : (cardWidth + gap);
+    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const container = sliderRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const cardWidth = container.querySelector('.snap-start')?.clientWidth || 300;
+      const index = Math.round(container.scrollLeft / cardWidth);
+      setActiveIndex(index);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <section className="pb-[120px] bg-[var(--color-background)] overflow-hidden max-[1024px]:py-[80px]">
+    <section className=" bg-[var(--color-background)] overflow-hidden max-[1024px]:py-[80px]">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-end mb-[64px]">
+        <div className="flex justify-between items-end mb-8">
           <div className="headerLeft">
             {/* <span className="block font-body text-[0.875rem] font-bold text-[var(--color-primary-bright)] tracking-[0.15em] mb-3 uppercase">
               BEST CATEGORIES
@@ -80,13 +106,40 @@ const CategoryGrid = () => {
               Curated high-performance gear engineered for movement and style.
             </p>
           </div>
+          
+          {/* Navigation Arrows */}
+          <div className="flex gap-3">
+            <button 
+              onClick={() => scroll('left')}
+              className="p-3 border border-black hover:bg-black text-black hover:text-white transition-all duration-300 cursor-pointer flex items-center justify-center group"
+              aria-label="Previous categories"
+            >
+              <Icon icon="ph:arrow-left-bold" className="text-xl transition-transform duration-300 group-hover:-translate-x-1" />
+            </button>
+            <button 
+              onClick={() => scroll('right')}
+              className="p-3 border border-black hover:bg-black text-black hover:text-white transition-all duration-300 cursor-pointer flex items-center justify-center group"
+              aria-label="Next categories"
+            >
+              <Icon icon="ph:arrow-right-bold" className="text-xl transition-transform duration-300 group-hover:translate-x-1" />
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-8 w-full max-[1024px]:grid-cols-2 max-[768px]:grid-cols-1 max-[768px]:gap-5">
+        <style>{`
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+          .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}</style>
+        <div ref={sliderRef} className="grid grid-flow-col auto-cols-[100%] md:auto-cols-[calc((100%-32px)/2)] lg:auto-cols-[calc((100%-64px)/3)] gap-8 overflow-x-auto snap-x snap-mandatory hide-scrollbar w-full">
           {categories.map((cat, index) => (
             <motion.div 
               key={cat.id} 
-              className="relative bg-[var(--color-black)] overflow-hidden cursor-pointer aspect-[16/10] flex flex-col group"
+              className="relative bg-[var(--color-black)] overflow-hidden cursor-pointer aspect-[16/10] flex flex-col group snap-start"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -118,6 +171,25 @@ const CategoryGrid = () => {
                 </div>
               </div>
             </motion.div>
+          ))}
+        </div>
+
+        {/* Slider Indicators (Dots) */}
+        <div className="flex justify-center gap-2 mt-8">
+          {categories.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                if (!sliderRef.current) return;
+                const container = sliderRef.current;
+                const cardWidth = container.querySelector('.snap-start')?.clientWidth || 300;
+                container.scrollTo({ left: idx * cardWidth, behavior: 'smooth' });
+              }}
+              className={`w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                idx === activeIndex ? 'bg-[#ec7700] w-4' : 'bg-gray-300'
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
           ))}
         </div>
       </div>

@@ -16,8 +16,6 @@ export default function Footer() {
 
   const supportLinks = [
     { name: "Contact Us", href: "#" },
-    { name: "Shipping Info", href: "#" },
-    { name: "Returns & Exchanges", href: "#" },
     { name: "FAQs", href: "#" },
     { name: "Size Guide", href: "#" },
   ];
@@ -28,6 +26,15 @@ export default function Footer() {
     { name: 'Sustainability', href: '#' },
     { name: 'Press', href: '#' },
     { name: 'Store Locator', href: '#' },
+  ];
+
+  const policyLinks = [
+    { name: "Privacy Policy", href: "#" },
+    { name: "Refund & Exchange", href: "#" },
+    { name: "Refund Policy", href: "#" },
+    { name: "Shipping Policy", href: "#" },
+    { name: "Terms of Service", href: "#" },
+    { name: "Search", href: "#" },
   ];
 
   const socialLinks = [
@@ -113,8 +120,22 @@ export default function Footer() {
           </ul>
         </div>
 
+        {/* Policy Links */}
+        <div>
+          <h3 className="font-bold text-lg mb-6 text-gray-900">Our Policies</h3>
+          <ul className="space-y-3">
+            {policyLinks.map((link) => (
+              <li key={link.name}>
+                <Link href={link.href} className="text-sm text-gray-600 hover:text-primary-bright transition-colors">
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {/* Get in Touch */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-1">
           <h3 className="font-bold text-lg mb-6 text-gray-900">Get in Touch</h3>
           <ul className="space-y-4">
             {contactInfo.map((item, idx) => (

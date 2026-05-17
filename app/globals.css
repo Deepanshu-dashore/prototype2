@@ -23,6 +23,8 @@
 
   --font-heading: var(--font-roboto), sans-serif;
   --font-body: var(--font-lexend), sans-serif;
+  --font-public: var(--font-public-sans), sans-serif;
+  --font-comforter: var(--font-comforter-brush), cursive;
 
   --spacing-section: 120px;
   --max-width-site: 1440px;
@@ -162,5 +164,13 @@ html {
 @media (max-width: 768px) {
   .grid-12 {
     grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }

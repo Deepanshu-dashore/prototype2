@@ -6,9 +6,10 @@ interface ProductGridProps {
   title: string;
   products: Product[];
   subtitle?: string;
+  showRating?: boolean;
 }
 
-const ProductGrid: React.FC<ProductGridProps> = ({ title, products, subtitle }) => {
+const ProductGrid: React.FC<ProductGridProps> = ({ title, products, subtitle, showRating }) => {
   return (
     <section className="py-24 bg-background">
       <div className="container">
@@ -33,9 +34,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products, subtitle }) 
           </Link>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-x-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-x-7">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} showRating={showRating} />
           ))}
         </div>
       </div>

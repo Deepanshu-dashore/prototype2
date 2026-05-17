@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Plus, Star } from 'lucide-react';
+import QuickViewModal from './QuickViewModal';
 
 export interface Product {
   id: number | string;
@@ -17,21 +18,25 @@ export interface Product {
   rating: number;
   isNew?: boolean;
   discount?: string;
+  badge?: string;
 }
 
 interface ProductCardProps {
   product: Product;
   className?: string;
+  showRating?: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, className = "", showRating = true }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
   return (
-    <Link 
-      href={`/product/${product.id}`}
-      className={`group flex flex-col cursor-pointer ${className}`}
-    >
+    <>
+      <Link 
+        href={`/product/${product.id}`}
+        className={`group flex flex-col cursor-pointer font-public ${className}`}
+      >
       {/* Image Container - Technical Minimalism */}
       <div 
         className="relative aspect-3/4 w-full overflow-hidden bg-surface-soft mb-3 transition-all duration-500"
@@ -72,6 +77,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) =>
           {product.discount && (
             <span className="bg-[#ba1a1a] text-white text-[11px] font-bold px-3 py-1.5 uppercase tracking-wider">
               {product.discount} Off
+            </span>
+          )}
+          {product.badge && (
+            <span className="bg-[#1E1E1E] text-white text-[11px] font-bold px-3 py-1.5 uppercase tracking-wider">
+              {product.badge}
             </span>
           )}
         </div>
@@ -116,7 +126,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) =>
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // Handle Quick View
+                setIsQuickViewOpen(true);
               }}
             >
               <div className="text-white text-center font-heading text-xs font-bold uppercase tracking-[0.2em]">
@@ -130,12 +140,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) =>
       {/* Product Details */}
       <div className="flex flex-col pb-2 gap-1 px-1">
         {/* Category */}
-        <span className="text-[11px] text-gray-500 uppercase tracking-wider font-medium font-heading">
+        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-normal">
           {product.category}
         </span>
         
         {/* Title */}
-        <h3 className="text-[16px] font-bold text-black tracking-tight leading-tight line-clamp-1">
+        <h3 className="text-[14px] font-medium text-black tracking-tight leading-tight line-clamp-1 font-public">
           {product.name}
         </h3>
 
@@ -143,10 +153,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) =>
         <div className="mt-0.5">
           {product.discount ? (
             <div className="flex items-center gap-2">
-              <span className="text-[14px] text-gray-400 line-through tracking-tight">
+              <span className="text-[12px] text-gray-400 line-through tracking-tight font-normal">
                 {product.price}
               </span>
-              <span className="text-[15px] font-normal text-gray-700 tracking-tight">
+              <span className="text-[13px] font-medium text-gray-800 tracking-tight">
                 {(() => {
                   const price = parseFloat(product.price.replace('$', '').replace('₹', ''));
                   const discount = parseFloat(product.discount.replace('% OFF', ''));
@@ -159,13 +169,36 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) =>
               </span>
             </div>
           ) : (
-            <span className="text-[15px] font-normal text-gray-800 tracking-tight">
+            <span className="text-[13px] font-medium text-gray-800 tracking-tight">
               {product.price}
             </span>
           )}
         </div>
+
+        {/* Rating */}
+        {showRating && product.rating > 0 && (
+          <div className="flex items-center gap-[1px] mt-1">
+            {[...Array(5)].map((_, index) => (
+              <Star
+                key={index}
+                size={10}
+                className={`${
+                  index < Math.floor(product.rating)
+                    ? 'text-yellow-500 fill-yellow-500'
+                    : 'text-gray-200 fill-gray-200'
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </Link>
+      <QuickViewModal 
+        product={product} 
+        isOpen={isQuickViewOpen} 
+        onClose={() => setIsQuickViewOpen(false)} 
+      />
+    </>
   );
 };
 
