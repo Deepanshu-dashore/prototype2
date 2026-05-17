@@ -79,7 +79,7 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen, onClos
               <div className="flex justify-between items-center">
                 <span className="text-[11px] text-gray-500 uppercase tracking-wider font-medium font-public bg-gray-100 px-2 py-1 rounded-sm">
                   {product.category}
-                </span>
+                </span> 
                 {product.rating > 0 && (
                   <div className="flex items-center gap-0.5">
                     <Star size={12} className="text-yellow-500 fill-yellow-500" />
