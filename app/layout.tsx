@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Lexend } from "next/font/google";
+import { Space_Grotesk, Lexend, Roboto } from "next/font/google";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -10,6 +10,12 @@ const spaceGrotesk = Space_Grotesk({
 const lexend = Lexend({
   variable: "--font-lexend",
   subsets: ["latin"],
+});
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -29,7 +35,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${lexend.variable} antialiased`}
+      className={`${spaceGrotesk.variable} ${lexend.variable} ${roboto.variable} antialiased`}
     >
       <body className="min-h-screen flex flex-col bg-white">
         <HelpingHeader />

@@ -1,8 +1,19 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient, UseQueryOptions, UseMutationOptions } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions,
+  UseMutationOptions,
+} from "@tanstack/react-query";
 import axios, { AxiosRequestConfig, AxiosError } from "axios";
-import Cookies from "js-cookie";
+const getCookie = (name: string) => {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  if (match) return decodeURIComponent(match[2]);
+  return null;
+};
 
 // Base API URL from env
 const BaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2500";
@@ -17,8 +28,11 @@ interface HeaderOptions {
   multiPart?: boolean;
 }
 
-const getHeader = ({ requireAuth = true, multiPart = false }: HeaderOptions = {}) => {
-  const token = Cookies.get("_AT") || null;
+const getHeader = ({
+  requireAuth = true,
+  multiPart = false,
+}: HeaderOptions = {}) => {
+  const token = getCookie("_AT") || getCookie("authToken") || null;
 
   if (requireAuth && !token) {
     // You can handle redirection or global toast here
@@ -26,11 +40,11 @@ const getHeader = ({ requireAuth = true, multiPart = false }: HeaderOptions = {}
   }
 
   const headers: Record<string, string> = {};
-  
-  if (requireAuth && token) {
+
+  if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
-  
+
   if (!multiPart) {
     headers["Content-Type"] = "application/json";
   } else {
@@ -43,16 +57,27 @@ const getHeader = ({ requireAuth = true, multiPart = false }: HeaderOptions = {}
 /* ===========================================================
    🔹 Hook for GET requests (useQuery)
    =========================================================== */
-interface UseGetApiProps<TQueryFnData = unknown, TError = unknown, TData = TQueryFnData> {
+interface UseGetApiProps<
+  TQueryFnData = unknown,
+  TError = unknown,
+  TData = TQueryFnData,
+> {
   key: string | readonly unknown[];
   url: string;
   requireAuth?: boolean;
-  options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+  options?: Omit<
+    UseQueryOptions<TQueryFnData, TError, TData>,
+    "queryKey" | "queryFn"
+  >;
   params?: Record<string, any>;
   payload?: any; // GET requests usually don't have a body, but added for flexibility
 }
 
-export const useGetApi = <TQueryFnData = any, TError = AxiosError, TData = TQueryFnData>({
+export const useGetApi = <
+  TQueryFnData = any,
+  TError = AxiosError,
+  TData = TQueryFnData,
+>({
   key,
   url,
   requireAuth = true,
@@ -92,7 +117,12 @@ interface MutationVariables {
   params?: Record<string, any>;
 }
 
-interface UseMutationApiProps<TData = unknown, TError = unknown, TVariables = MutationVariables, TContext = unknown> {
+interface UseMutationApiProps<
+  TData = unknown,
+  TError = unknown,
+  TVariables = MutationVariables,
+  TContext = unknown,
+> {
   key: string | readonly unknown[];
   url: string;
   method?: HttpMethod;
@@ -101,7 +131,12 @@ interface UseMutationApiProps<TData = unknown, TError = unknown, TVariables = Mu
   options?: UseMutationOptions<TData, TError, TVariables, TContext>;
 }
 
-export const useMutationApi = <TData = any, TError = AxiosError, TVariables = MutationVariables, TContext = unknown>({
+export const useMutationApi = <
+  TData = any,
+  TError = AxiosError,
+  TVariables = MutationVariables,
+  TContext = unknown,
+>({
   key,
   url,
   method = "POST",
@@ -113,9 +148,13 @@ export const useMutationApi = <TData = any, TError = AxiosError, TVariables = Mu
   const baseQueryKey = Array.isArray(key) ? key : [key];
 
   return useMutation<TData, TError, TVariables, TContext>({
-    mutationFn: async (variables) => {
-      const { id = null, payload = {}, params = {} } = (variables || {}) as MutationVariables;
-      
+    mutationFn: async (variables: TVariables) => {
+      const {
+        id = null,
+        payload = {},
+        params = {},
+      } = (variables || {}) as MutationVariables;
+
       try {
         const requestedUrl = id ? `${url}/${id}` : url;
         const config: AxiosRequestConfig = {
@@ -143,14 +182,14 @@ export const useMutationApi = <TData = any, TError = AxiosError, TVariables = Mu
         }
         return response.data;
       } catch (error) {
-        console.error(`Mutation Error for ${baseQueryKey.join('-')}:`, error);
+        console.error(`Mutation Error for ${baseQueryKey.join("-")}:`, error);
         throw error;
       }
     },
     ...options,
-    onSuccess: (data, variables, context) => {
+    onSuccess: (data: TData, variables: TVariables, context: TContext) => {
       const vars = variables as MutationVariables;
-      
+
       // Invalidate specific queries based on the key to refetch data
       queryClient.invalidateQueries({
         queryKey: vars?.params ? [...baseQueryKey, vars.params] : baseQueryKey,
@@ -158,15 +197,19 @@ export const useMutationApi = <TData = any, TError = AxiosError, TVariables = Mu
 
       // Call custom onSuccess if provided
       if (options.onSuccess) {
-        options.onSuccess(data, variables, context);
+        (options.onSuccess as any)(data, variables, context);
       }
     },
-    onError: (error, variables, context) => {
-      console.error(`Mutation Error for ${baseQueryKey.join('-')}:`, error);
+    onError: (
+      error: TError,
+      variables: TVariables,
+      context: TContext | undefined,
+    ) => {
+      console.error(`Mutation Error for ${baseQueryKey.join("-")}:`, error);
 
       // Call custom onError if provided
       if (options.onError) {
-        options.onError(error, variables, context);
+        (options.onError as any)(error, variables, context);
       }
     },
   });

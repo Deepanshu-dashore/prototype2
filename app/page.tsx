@@ -99,13 +99,13 @@ export default function Home() {
       {/* <CategorySection /> */}
       <ProductGrid 
         title="Trending Now" 
-        subtitle="The Latest Gear"
+        subtitle="Experience the latest in high-performance innovation and athletic style."
         products={trendingProducts} 
       />
       <BrandStory />
       <ProductGrid 
         title="Best Sellers" 
-        subtitle="Fan Favorites"
+        subtitle="Our highest-rated, most demanded gear engineered for everyday excellence."
         products={bestSellers} 
       />
       <Newsletter />

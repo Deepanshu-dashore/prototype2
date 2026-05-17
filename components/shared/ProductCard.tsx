@@ -31,11 +31,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) =>
     <Link 
       href={`/product/${product.id}`}
       className={`group flex flex-col cursor-pointer ${className}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Container - Technical Minimalism */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface-soft mb-5 group-hover:shadow-xl transition-all duration-500">
+      <div 
+        className="relative aspect-3/4 w-full overflow-hidden bg-surface-soft mb-3 transition-all duration-500"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         {/* Base Image */}
         <Image
           src={product.image}
@@ -63,12 +65,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) =>
         {/* Badges — flat sharp rectangles, stacked top-0 left-0 */}
         <div className="absolute top-0 left-0 z-10 flex flex-col">
           {product.isNew && (
-            <span className="bg-[#964900] text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-wider">
-              Just In
+            <span className="bg-[#f0655d] text-white text-[11px] font-bold px-3 py-1.5 uppercase tracking-wider">
+              New Launch
             </span>
           )}
           {product.discount && (
-            <span className="bg-[#ba1a1a] text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-wider">
+            <span className="bg-[#ba1a1a] text-white text-[11px] font-bold px-3 py-1.5 uppercase tracking-wider">
               {product.discount} Off
             </span>
           )}
@@ -76,7 +78,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) =>
         
         {/* Wishlist Button - Refined Iconography */}
         <button 
-          className="absolute top-4 right-4 z-20 p-2.5 bg-white/90 backdrop-blur-md rounded-full text-black hover:bg-black hover:text-white transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-[-10px] group-hover:translate-y-0"
+          className="absolute cursor-pointer top-4 right-4 z-20 p-2.5 bg-black/15 backdrop-blur-[1px] text-white hover:bg-primary-bright/60 hover:text-white transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-[-10px] group-hover:translate-y-0"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -86,65 +88,81 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) =>
           <Heart size={16} />
         </button>
 
-        {/* Quick Add Overlay - High-Performance Interaction */}
+        {/* Pagination Dots on Hover */}
+        <AnimatePresence>
+          {isHovered && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute bottom-14 left-1/2 -translate-x-1/2 flex gap-1.5 z-20"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-black"></span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Quick View Bar on Hover */}
         <AnimatePresence>
           {isHovered && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-              className="absolute bottom-0 left-0 right-0 p-4 bg-white/10 backdrop-blur-sm z-10"
+              transition={{ duration: 0.3 }}
+              className="absolute bottom-0 left-0 right-0 bg-[#2d2724]/90 py-3.5 z-10 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Handle Quick View
+              }}
             >
-              <button 
-                className="w-full bg-primary-bright text-white font-bold uppercase py-3.5 flex items-center justify-center space-x-2 hover:bg-primary transition-colors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  // Handle Quick Add
-                }}
-              >
-                <Plus size={18} />
-                <span className="text-xs tracking-[0.15em]">Quick Add</span>
-              </button>
+              <div className="text-white text-center font-heading text-xs font-bold uppercase tracking-[0.2em]">
+                Quick View
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
       {/* Product Details */}
-      <div className="flex flex-col pt-4 pb-2 px-1 gap-0.5">
-        <div className="flex justify-between items-start">
-          <div className="flex flex-col flex-1 min-w-0">
-            <h3 className="text-[15px] md:text-[16px] font-bold text-black uppercase tracking-tight leading-tight line-clamp-1 group-hover:text-primary-bright transition-colors font-heading">
-              {product.name}
-            </h3>
-            <p className="text-[13px] md:text-[14px] text-gray-500 font-medium">
-              {product.category}
-            </p>
-          </div>
-          <div className="text-right ml-2">
-            <span className="text-[15px] md:text-[16px] font-bold text-black tracking-tight">
+      <div className="flex flex-col pb-2 gap-1 px-1">
+        {/* Category */}
+        <span className="text-[11px] text-gray-500 uppercase tracking-wider font-medium font-heading">
+          {product.category}
+        </span>
+        
+        {/* Title */}
+        <h3 className="text-[16px] font-bold text-black tracking-tight leading-tight line-clamp-1">
+          {product.name}
+        </h3>
+
+        {/* Price */}
+        <div className="mt-0.5">
+          {product.discount ? (
+            <div className="flex items-center gap-2">
+              <span className="text-[14px] text-gray-400 line-through tracking-tight">
+                {product.price}
+              </span>
+              <span className="text-[15px] font-normal text-gray-700 tracking-tight">
+                {(() => {
+                  const price = parseFloat(product.price.replace('$', '').replace('₹', ''));
+                  const discount = parseFloat(product.discount.replace('% OFF', ''));
+                  if (!isNaN(price) && !isNaN(discount)) {
+                    const symbol = product.price.includes('₹') ? '₹' : '$';
+                    return `${symbol}${Math.round(price * (1 - discount / 100))}`;
+                  }
+                  return product.price;
+                })()}
+              </span>
+            </div>
+          ) : (
+            <span className="text-[15px] font-normal text-gray-800 tracking-tight">
               {product.price}
             </span>
-          </div>
-        </div>
-
-        {/* Color Variants & Rating */}
-        <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
-          <div className="flex items-center gap-1.5">
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-full bg-black border border-gray-200" />
-              <div className="w-3 h-3 rounded-full bg-gray-300 border border-gray-200" />
-            </div>
-            <span className="text-[11px] text-gray-400 font-bold uppercase ml-1 tracking-tighter">
-              +3 Colors
-            </span>
-          </div>
-          <div className="flex items-center space-x-1 opacity-60">
-            <Star size={10} className="fill-black text-black" />
-            <span className="text-[10px] font-bold tracking-tighter">{product.rating}</span>
-          </div>
+          )}
         </div>
       </div>
     </Link>

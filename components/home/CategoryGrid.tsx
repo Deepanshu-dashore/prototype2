@@ -70,12 +70,15 @@ const CategoryGrid = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-end mb-[64px]">
           <div className="headerLeft">
-            <span className="block font-body text-[0.875rem] font-bold text-[var(--color-primary-bright)] tracking-[0.15em] mb-3 uppercase">
+            {/* <span className="block font-body text-[0.875rem] font-bold text-[var(--color-primary-bright)] tracking-[0.15em] mb-3 uppercase">
               BEST CATEGORIES
-            </span>
-            <h2 className="font-heading text-[3.5rem] font-bold text-[var(--color-black)] tracking-[-0.04em] uppercase leading-[0.9] max-[1200px]:text-[2.75rem] max-[768px]:text-[2.25rem]">
+            </span> */}
+            <h2 className="heading-brand">
               FOR YOUR BRAND
             </h2>
+            <p className="brand-desc">
+              Curated high-performance gear engineered for movement and style.
+            </p>
           </div>
         </div>
 
