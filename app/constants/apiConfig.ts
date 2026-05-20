@@ -9,24 +9,24 @@ export const API_ENDPOINTS = {
     VERIFY_OTP: `/users/verify-otp`,
     REGISTER: `/users/register`,
     LOGIN: `/users/login`,
-    CURRENT_USER: `${API_BASE_URL}/users/current-user`,
-    UPDATE_USER: `${API_BASE_URL}/users/update-user`,
+    CURRENT_USER: `/users/current-user`,
+    UPDATE_USER: `/users/update-user`,
     LOGOUT: `/users/logout`,
-    DELETE_USER: `${API_BASE_URL}/users/delete-user`,
-    REFRESH_TOKEN: `${API_BASE_URL}/users/refresh-token`,
-    REQUEST_PASSWORD_RESET: `${API_BASE_URL}/users/password-reset/request`,
-    RESET_PASSWORD: (token: string) => `${API_BASE_URL}/users/reset-password/${token}`,
+    DELETE_USER: `/users/delete-user`,
+    REFRESH_TOKEN: `/users/refresh-token`,
+    REQUEST_PASSWORD_RESET: `/users/password-reset/request`,
+    RESET_PASSWORD: (token: string) => `/users/reset-password/${token}`,
   },
 
   // Product endpoints
   PRODUCT: {
     GET_ALL: `/products/get-all-product`,
-    GET_BY_ID: (id: string | number) => `${API_BASE_URL}/products/get-product/${id}`,
-    CREATE: `${API_BASE_URL}/products/create-product`,
-    UPDATE: (id: string | number) => `${API_BASE_URL}/products/update-product/${id}`,
-    UPDATE_IMAGE: (id: string | number) => `${API_BASE_URL}/products/update-image/${id}`,
-    DELETE: (id: string | number) => `${API_BASE_URL}/products/delete-product/${id}`,
-    DELETE_ALL: `${API_BASE_URL}/products/delete-products`,
+    GET_BY_ID: (id: string | number) => `/products/get-product/${id}`,
+    CREATE: `/products/create-product`,
+    UPDATE: (id: string | number) => `/products/update-product/${id}`,
+    UPDATE_IMAGE: (id: string | number) => `/products/update-image/${id}`,
+    DELETE: (id: string | number) => `/products/delete-product/${id}`,
+    DELETE_ALL: `/products/delete-products`,
   },
 
   REVIEW: {
@@ -41,9 +41,9 @@ export const API_ENDPOINTS = {
   // Category endpoints
   CATEGORY: {
     GET_ALL: `/category`,
-    CREATE: `${API_BASE_URL}/category/create`,
-    UPDATE: (id: string | number) => `${API_BASE_URL}/category/update/${id}`,
-    DELETE: (id: string | number) => `${API_BASE_URL}/category/delete/${id}`,
+    CREATE: `/category/create`,
+    UPDATE: (id: string | number) => `/category/update/${id}`,
+    DELETE: (id: string | number) => `/category/delete/${id}`,
   },
 
   // filters 
@@ -53,23 +53,23 @@ export const API_ENDPOINTS = {
 
   // Cart endpoints
   CART: {
-    ADD: `${API_BASE_URL}/carts/add`,
-    LOCAL_CART: `${API_BASE_URL}/carts/local-cart`,
-    SYNC_CART: `${API_BASE_URL}/carts/sync-cart`,
-    GET_CART: `${API_BASE_URL}/carts/get-cart`,
-    GET_LOCAL_CART: (tempCartId: string | number) => `${API_BASE_URL}/carts/get-localCart/${tempCartId}`,
+    ADD: `/carts/add`,
+    LOCAL_CART: `/carts/local-cart`,
+    SYNC_CART: `/carts/sync-cart`,
+    GET_CART: `/carts/get-cart`,
+    GET_LOCAL_CART: (tempCartId: string | number) => `/carts/get-localCart/${tempCartId}`,
     UPDATE: `/carts/update-cart/`,
     REMOVE: `/carts/remove/`,
-    UPDATE_QUANTITY: `${API_BASE_URL}/carts/update-quantity`,
-    REMOVE_ITEM: `${API_BASE_URL}/carts/remove-item`,
+    UPDATE_QUANTITY: `/carts/update-quantity`,
+    REMOVE_ITEM: `/carts/remove-item`,
   },
 
   // Order endpoints
   ORDER: {
-    ORDER_FROM_CART: `${API_BASE_URL}/orders/order-cart`,
-    ORDER_SINGLE_PRODUCT: `${API_BASE_URL}/orders/order-product`,
-    GET_ORDER: (orderId: string | number) => `${API_BASE_URL}/orders/get-order/${orderId}`,
-    GET_ORDERS: `${API_BASE_URL}/orders/get-orders`,
+    ORDER_FROM_CART: `/orders/order-cart`,
+    ORDER_SINGLE_PRODUCT: `/orders/order-product`,
+    GET_ORDER: (orderId: string | number) => `/orders/get-order/${orderId}`,
+    GET_ORDERS: `/orders/get-orders`,
   },
 
   // Address endpoints
