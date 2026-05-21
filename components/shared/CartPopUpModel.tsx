@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState, startTransition } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, X, CheckCircle2 } from "lucide-react";
@@ -28,16 +28,24 @@ export default function CartPopUpModel({
   price
 }: CartPopUpModelProps) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      const timer = setTimeout(() => {
-        onClose();
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open || !mounted) return;
+
+    const timer = setTimeout(() => {
+      onClose();
+      startTransition(() => {
         router.push("/cart");
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [open, onClose, router]);
+      });
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [open, onClose, router, mounted]);
 
   if (typeof window === 'undefined') return null;
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Lexend, Roboto, Public_Sans, Comforter_Brush } from "next/font/google";
 import "./globals.css";
+import Providers from "./providers";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -49,12 +50,14 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${lexend.variable} ${roboto.variable} ${publicSans.variable} ${comforterBrush.variable} antialiased`}
     >
       <body className="min-h-screen flex flex-col bg-white">
-        <HelpingHeader />
-        <Navbar />
-        <div className="flex-grow">
-          {children}
-        </div>
-        <Footer />
+        <Providers>
+          <HelpingHeader />
+          <Navbar />
+          <div className="flex-grow">
+            {children}
+          </div>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Plus, 
+import {
+  Plus,
   Minus,
   Maximize2,
   Share2,
@@ -25,9 +26,11 @@ import ProductCard, { Product } from '@/components/shared/ProductCard';
 import CartPopUpModel from '@/components/shared/CartPopUpModel';
 import LoginPopUpModel from '@/components/shared/LoginPopUpModel';
 import ReviewModal from '@/components/shared/ReviewModal';
+import { useGetApi } from '@/hooks/useApi';
+import API_ENDPOINTS from '@/app/constants/apiConfig';
 
 // Mock Product Data
-const MOCK_PRODUCT = {
+const product = {
   id: "1",
   name: "AERO-DRY PERFORMANCE TEE",
   category: "TRAINING / PERFORMANCE",
@@ -116,12 +119,78 @@ const SIMILAR_PRODUCTS: Product[] = [
   { id: 5, name: "IGNITE FOAM RUNNERS", category: "RUNNING", price: "$160.00", image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?q=80&w=2070&auto=format&fit=crop", imageAlt: "Ignite Foam Runners", rating: 4.9 }
 ];
 
-export default function ProductDetailPage() {
-  const { id } = useParams();
+interface ProductCategory {
+  _id: string;
+  name: string;
+  keywords?: string[];
+  isActive?: boolean;
+}
+
+interface GetProduct {
+  id: string;
+  name: string;
+  productDescription: string;
+  price: string;
+  image: string;
+  imageAlt: string;
+  rating: number;
+  isNew?: boolean;
+  discount?: string;
+  category: string | ProductCategory;
+
+  images?: string[];
+  variants?: any[];
+  specification?: any[];
+  productDimensions: any;
+  itemModelNumber: string;
+  itemWeight: number;
+  genericName: string;
+  netQuantity: string;
+  reviewsCount: number;
+  whatsInTheBox: string[];
+}
+
+function getCategoryLabel(category: GetProduct["category"]): string {
+  if (!category) return "";
+  if (typeof category === "string") return category;
+  return category.name ?? "";
+}
+
+function getProductGalleryImages(product: GetProduct): string[] {
+  if (product.images?.length) return product.images;
+
+  const fromVariants = (product.variants ?? []).flatMap(
+    (variant: { images?: string[] }) => variant.images ?? []
+  );
+  const uniqueVariantImages = [...new Set(fromVariants.filter(Boolean))];
+  if (uniqueVariantImages.length) return uniqueVariantImages;
+
+  if (product.image) return [product.image];
+  return [];
+}
+
+function ProductDetailContent() {
+  const params = useParams();
+  const productId =
+    typeof params.id === "string"
+      ? params.id
+      : Array.isArray(params.id)
+        ? params.id[0]
+        : undefined;
+
+  const { data, isLoading, error } = useGetApi<{ data: GetProduct }>({
+    key: ["product", productId],
+    url: API_ENDPOINTS.PRODUCT.GET_BY_ID(productId ?? ""),
+    requireAuth: false,
+    options: {
+      enabled: Boolean(productId),
+    },
+  });
+
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedColor, setSelectedColor] = useState(MOCK_PRODUCT.variants[0].color);
+  const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("M");
-  const [selectedPrice, setSelectedPrice] = useState(MOCK_PRODUCT.price);
+  const [selectedPrice, setSelectedPrice] = useState("");
   const [selectvarid, setSelectvarid] = useState<string | null>(null);
   const [inStock, setInStock] = useState(true);
   const [showSizeChart, setShowSizeChart] = useState(false);
@@ -141,7 +210,49 @@ export default function ProductDetailPage() {
   const [reviewsLoading] = useState(false);
   const [reviewsError] = useState(false);
 
-  const product = MOCK_PRODUCT;
+  const apiProduct = data?.data;
+
+  useEffect(() => {
+    if (!apiProduct) return;
+
+    setSelectedImage(0);
+    const variants = apiProduct.variants ?? [];
+    if (!variants.length) {
+      setSelectedPrice(apiProduct.price ?? "");
+      return;
+    }
+
+    const firstVariant = variants[0];
+    const firstAvailableSize =
+      firstVariant.sizes?.find((s: { stock: number }) => s.stock > 0) ?? firstVariant.sizes?.[0];
+
+    setSelectedColor(firstVariant.color ?? "");
+    setSelectedPrice(firstAvailableSize?.price ?? apiProduct.price ?? "");
+    setSelectedSize(firstAvailableSize?.size ?? "M");
+    setSelectvarid(firstAvailableSize?.id ?? null);
+    setInStock((firstAvailableSize?.stock ?? 0) > 0);
+  }, [apiProduct?.id]);
+
+  if (!productId) {
+    return <div>Invalid product</div>;
+  }
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+  if (!apiProduct) {
+    return <div>No product found</div>;
+  }
+
+  const product = apiProduct;
+  const categoryLabel = getCategoryLabel(product.category);
+  const galleryImages = getProductGalleryImages(product);
+  const variants = product.variants ?? [];
+  const specifications = product.specification ?? [];
+  const mainImage = galleryImages[selectedImage] ?? galleryImages[0];
+
   const reviewsData = {
     averageRating: 4.9,
     totalReviews: 124,
@@ -171,7 +282,7 @@ export default function ProductDetailPage() {
   };
 
   const capitalize = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
-  
+
   const toggleReviewDescription = (id: string) => {
     setExpandedReviews(prev => ({ ...prev, [id]: !prev[id] }));
   };
@@ -185,15 +296,15 @@ export default function ProductDetailPage() {
 
   return (
     <>
-      
+
       <main className="container pt-32 pb-24">
         {/* Breadcrumbs */}
         <div className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-text-secondary/40 mb-12">
-          <a href="/" className="hover:text-primary-bright">Home</a>
+          <Link href="/" className="hover:text-primary-bright">Home</Link>
           <ChevronRight size={10} />
-          <a href="/shop" className="hover:text-primary-bright">Shop</a>
+          <Link href="/shop" className="hover:text-primary-bright">Shop</Link>
           <ChevronRight size={10} />
-          <span className="text-text-primary">{MOCK_PRODUCT.name}</span>
+          <span className="text-text-primary">{product.name}</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
@@ -201,13 +312,13 @@ export default function ProductDetailPage() {
           <div className="lg:col-span-7 flex flex-col md:flex-row gap-6">
             {/* Thumbnails */}
             <div className="order-2 md:order-1 flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto no-scrollbar">
-              {MOCK_PRODUCT.images.map((img, i) => (
-                <button 
+              {galleryImages.map((img, i) => (
+                <button
                   key={i}
                   onClick={() => setSelectedImage(i)}
                   className={`relative w-20 aspect-square flex-shrink-0 bg-surface-soft border-2 transition-all duration-300 ${selectedImage === i ? 'border-primary-bright shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
-                  <Image src={img} alt={`${MOCK_PRODUCT.name} view ${i + 1}`} fill className="object-cover" />
+                  <Image src={img} alt={`${product.name} view ${i + 1}`} fill className="object-cover" />
                 </button>
               ))}
             </div>
@@ -223,19 +334,25 @@ export default function ProductDetailPage() {
                   transition={{ duration: 0.5 }}
                   className="w-full h-full"
                 >
-                  <Image 
-                    src={MOCK_PRODUCT.images[selectedImage]} 
-                    alt={MOCK_PRODUCT.name} 
-                    fill 
-                    priority
-                    className="object-cover"
-                  />
+                  {mainImage ? (
+                    <Image
+                      src={mainImage}
+                      alt={product.name}
+                      fill
+                      priority
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-sm text-text-secondary">
+                      No image available
+                    </div>
+                  )}
                 </motion.div>
               </AnimatePresence>
-              
+
               <button className="absolute top-6 right-6 p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
                 <Maximize2 size={20} />
-                </button>
+              </button>
             </div>
           </div>
 
@@ -243,15 +360,15 @@ export default function ProductDetailPage() {
           <div className="lg:col-span-5 flex flex-col">
             <div className="mb-8">
               <span className="text-primary-bright font-bold uppercase tracking-[0.2em] text-xs mb-3 block">
-                  {MOCK_PRODUCT.category}
-                </span>
+                {categoryLabel}
+              </span>
               <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-tighter leading-none mb-6">
-                {MOCK_PRODUCT.name}
+                {product.name}
               </h1>
-              
+
               <div className="flex items-center gap-6 mb-8">
                 <div className="text-3xl font-bold tracking-tight text-black">
-                {MOCK_PRODUCT.price}
+                  {product.price}
                 </div>
                 <div className="flex items-center gap-1 border-l border-border pl-6">
                   <div className="flex">
@@ -259,13 +376,13 @@ export default function ProductDetailPage() {
                       <Star key={i} size={14} className={i < 4 ? "fill-primary-bright text-primary-bright" : "text-border"} />
                     ))}
                   </div>
-                  <span className="text-[10px] font-bold text-text-secondary/60">({MOCK_PRODUCT.reviewsCount} REVIEWS)</span>
+                  <span className="text-[10px] font-bold text-text-secondary/60">({product.reviewsCount ?? reviewsData.totalReviews} REVIEWS)</span>
                 </div>
               </div>
 
               {/* Description */}
               <p className="text-text-secondary text-sm leading-relaxed mb-10 max-w-md">
-                {MOCK_PRODUCT.productDescription}
+                {product.productDescription}
               </p>
             </div>
 
@@ -279,12 +396,12 @@ export default function ProductDetailPage() {
                   </div>
                 )}
               </div>
-              
+
               <div className="flex flex-wrap gap-3">
-                {MOCK_PRODUCT.variants.map((variant, i) => {
+                {variants.map((variant: any, i: any) => {
                   const isSelected = selectedColor === variant?.color;
                   const hasStock = variant?.sizes?.some(
-                    (size) => size?.stock > 0
+                    (size: any) => size?.stock > 0
                   );
 
                   return (
@@ -294,7 +411,7 @@ export default function ProductDetailPage() {
                         if (hasStock) {
                           setSelectedColor(variant?.color);
                           if (variant?.sizes && variant.sizes.length > 0) {
-                            const firstAvailableSize = variant.sizes.find(size => size.stock > 0) || variant.sizes[0];
+                            const firstAvailableSize = variant.sizes.find((size: any) => size.stock > 0) || variant.sizes[0];
                             setSelectedSize(firstAvailableSize.size);
                             setSelectedPrice(firstAvailableSize.price);
                             setSelectvarid(firstAvailableSize.id);
@@ -310,13 +427,13 @@ export default function ProductDetailPage() {
                       `}
                     >
                       <Image
-                        src={variant.images[0]}
+                        src={variant.images?.[0] ?? product.image}
                         alt={variant?.color}
                         fill
                         sizes="64px"
                         className="object-cover"
                       />
-                      
+
                       {isSelected && (
                         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-black" />
                       )}
@@ -335,18 +452,18 @@ export default function ProductDetailPage() {
                     {!selectedSize
                       ? "Select size"
                       : inStock
-                      ? "In Stock"
-                      : "Out of Stock"}
+                        ? "In Stock"
+                        : "Out of Stock"}
                   </div>
                 </div>
               )}
 
               <div className="grid grid-cols-6 gap-2 mb-6">
                 {(() => {
-                  const selectedVariant = MOCK_PRODUCT.variants.find(v => v.color === selectedColor);
-                  const sizes = selectedVariant ? selectedVariant.sizes : [];
-                  
-                  return sizes.map((sizeObj) => (
+                  const selectedVariant = variants.find((v: any) => v.color === selectedColor);
+                  const sizes = selectedVariant?.sizes ?? [];
+
+                  return sizes.map((sizeObj: any) => (
                     <button
                       key={sizeObj.id}
                       disabled={sizeObj.stock === 0}
@@ -357,10 +474,10 @@ export default function ProductDetailPage() {
                         setInStock(sizeObj.stock > 0);
                       }}
                       className={`h-12 flex items-center justify-center font-bold text-xs transition-all border 
-                        ${selectedSize === sizeObj.size 
-                          ? 'bg-black text-white border-black shadow-lg translate-y-[-2px]' 
-                          : sizeObj.stock === 0 
-                            ? 'bg-gray-100 text-gray-300 border-transparent cursor-not-allowed' 
+                        ${selectedSize === sizeObj.size
+                          ? 'bg-black text-white border-black shadow-lg translate-y-[-2px]'
+                          : sizeObj.stock === 0
+                            ? 'bg-gray-100 text-gray-300 border-transparent cursor-not-allowed'
                             : 'bg-surface-soft text-black border-transparent hover:border-black/20'}`}
                     >
                       {sizeObj.size}
@@ -386,28 +503,28 @@ export default function ProductDetailPage() {
 
             {/* Quantity & Add to Cart */}
             <div className="flex flex-col gap-4 mt-auto">
-                <div className="flex gap-4">
+              <div className="flex gap-4">
                 <div className="flex items-center bg-surface-soft px-4 h-14">
                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 hover:text-primary-bright transition-colors"><Minus size={16} /></button>
                   <span className="w-12 text-center font-bold text-sm">{quantity}</span>
                   <button onClick={() => setQuantity(quantity + 1)} className="p-2 hover:text-primary-bright transition-colors"><Plus size={16} /></button>
-                  </div>
-                  <button 
-                    onClick={handleAddToBag}
-                  className="flex-1 bg-primary-bright text-white font-semibold uppercase flex items-center justify-center space-x-3 hover:bg-primary transition-all shadow-xl hover:shadow-primary-bright/20 text-sm"
-                  >
-                    <ShoppingBag size={20} />
-                    <span>Add to Bag</span>
-                  </button>
                 </div>
-                <button 
-                  onClick={handleWishlist}
-                  className="h-14 border border-black/10 font-semibold uppercase text-sm flex items-center justify-center gap-3 hover:bg-black hover:text-white transition-all duration-500 group relative overflow-hidden"
+                <button
+                  onClick={handleAddToBag}
+                  className="flex-1 bg-primary-bright text-white font-semibold uppercase flex items-center justify-center space-x-3 hover:bg-primary transition-all shadow-xl hover:shadow-primary-bright/20 text-sm"
                 >
-                  <Icon icon="solar:heart-linear" className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span>Add to Wishlist</span>
-                  <div className="absolute inset-0 bg-black/5 opacity-0 group-active:opacity-100 transition-opacity" />
+                  <ShoppingBag size={20} />
+                  <span>Add to Bag</span>
                 </button>
+              </div>
+              <button
+                onClick={handleWishlist}
+                className="h-14 border border-black/10 font-semibold uppercase text-sm flex items-center justify-center gap-3 hover:bg-black hover:text-white transition-all duration-500 group relative overflow-hidden"
+              >
+                <Icon icon="solar:heart-linear" className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span>Add to Wishlist</span>
+                <div className="absolute inset-0 bg-black/5 opacity-0 group-active:opacity-100 transition-opacity" />
+              </button>
             </div>
 
             {/* Trust Badges */}
@@ -419,7 +536,7 @@ export default function ProductDetailPage() {
               <div className="flex flex-col items-center text-center gap-2">
                 <RotateCcw size={20} className="text-text-secondary/60" />
                 <span className="text-[9px] font-bold uppercase tracking-widest text-text-secondary/60">30-Day Returns</span>
-                </div>
+              </div>
               <div className="flex flex-col items-center text-center gap-2">
                 <ShieldCheck size={20} className="text-text-secondary/60" />
                 <span className="text-[9px] font-bold uppercase tracking-widest text-text-secondary/60">2-Year Warranty</span>
@@ -435,9 +552,8 @@ export default function ProductDetailPage() {
               <button
                 key={item}
                 onClick={() => setSelectedTab(item)}
-                className={`relative pb-2 text-sm font-semibold transition-all ${
-                  selectedTab === item ? "text-black" : "text-gray-500 hover:text-black"
-                }`}
+                className={`relative pb-2 text-sm font-semibold transition-all ${selectedTab === item ? "text-black" : "text-gray-500 hover:text-black"
+                  }`}
               >
                 {item === "description"
                   ? "Description"
@@ -541,7 +657,7 @@ export default function ProductDetailPage() {
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                              {product.specification.map((spec, i) => (
+                              {specifications.map((spec, i) => (
                                 <tr key={i} className="hover:bg-gray-50 transition-colors">
                                   <td className="p-3 font-medium text-gray-800 border-r border-gray-200">{spec.name}</td>
                                   <td className="p-3 text-gray-600">{spec.value}</td>
@@ -718,12 +834,12 @@ export default function ProductDetailPage() {
                                 <span className="text-[8px] font-bold uppercase tracking-widest text-green-600">Verified Athlete</span>
                               </div>
                             </div>
-                            
+
                             <div className="md:w-3/4 space-y-6">
                               <p className="text-sm text-gray-600 leading-relaxed font-medium">
                                 "{review.comment}"
                               </p>
-                              
+
                               {review.media.length > 0 && (
                                 <div className="flex gap-4">
                                   {review.media.map((mediaUrl, i) => (
@@ -752,10 +868,10 @@ export default function ProductDetailPage() {
               <span className="text-primary-bright font-bold uppercase tracking-[0.3em] text-[10px]">Gear Upgrade</span>
               <h2 className="text-5xl lg:text-7xl font-bold uppercase tracking-tighter leading-none">Complete The Kit</h2>
             </div>
-            <a href="/shop" className="group flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-black">
+            <Link href="/shop" className="group flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-black">
               <span className="border-b-2 border-black pb-1">Shop Collection</span>
               <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-            </a>
+            </Link>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {SIMILAR_PRODUCTS.map((product) => (
@@ -763,26 +879,42 @@ export default function ProductDetailPage() {
             ))}
           </div>
         </div>
-      </main>
+      </main >
 
-      <CartPopUpModel 
-        open={showCartModal} 
-        onClose={() => setShowCartModal(false)} 
-        product={MOCK_PRODUCT}
+      <CartPopUpModel
+        open={showCartModal}
+        onClose={() => setShowCartModal(false)}
+        product={product}
         selectedSize={selectedSize}
         price={selectedPrice}
       />
 
-      <LoginPopUpModel 
-        open={showLoginModal} 
-        onClose={() => setShowLoginModal(false)} 
+      <LoginPopUpModel
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
       />
 
       <ReviewModal
         open={openReviewModal}
         onClose={() => setOpenReviewModal(false)}
-        product={MOCK_PRODUCT}
+        product={product}
       />
     </>
+  );
+}
+
+function ProductDetailLoading() {
+  return (
+    <main className="container pt-32 pb-24">
+      <div className="text-sm text-text-secondary">Loading product...</div>
+    </main>
+  );
+}
+
+export default function ProductDetailPage() {
+  return (
+    <Suspense fallback={<ProductDetailLoading />}>
+      <ProductDetailContent />
+    </Suspense>
   );
 }

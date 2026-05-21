@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { User } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 
@@ -20,16 +20,24 @@ export default function LoginPopUpModel({
   position = "top-right"
 }: LoginPopUpModelProps) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      const timer = setTimeout(() => {
-        onClose();
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open || !mounted) return;
+
+    const timer = setTimeout(() => {
+      onClose();
+      startTransition(() => {
         router.push("/login");
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [open, onClose, router]);
+      });
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [open, onClose, router, mounted]);
 
   if (typeof window === 'undefined') return null;
 

@@ -58,7 +58,7 @@ const getHeader = ({
    🔹 Hook for GET requests (useQuery)
    =========================================================== */
 interface UseGetApiProps<
-  TQueryFnData = unknown,
+  TQueryFnData = any,
   TError = unknown,
   TData = TQueryFnData,
 > {

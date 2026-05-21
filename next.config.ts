@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'nexapoint-e-com-site-backend.onrender.com',
+        pathname: '/uploads/**',
+      },
     ],
   },
 };
