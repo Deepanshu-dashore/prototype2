@@ -3,8 +3,11 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import AuthInput from "../../components/auth/AuthInput";
+import { useMutationApi } from "@/hooks/useApi";
+import API_ENDPOINTS from "../constants/apiConfig";
+import { redirect } from "next/navigation";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,9 +16,28 @@ export default function LoginPage() {
     password: "",
   });
 
+  const { mutateAsync: loginUser, isPending, isError, error } = useMutationApi({
+    key: "register",
+    url: API_ENDPOINTS.USER.LOGIN,
+    method: "POST",
+    requireAuth: false,
+    options: {
+      onSuccess: (data) => {
+        console.log("Registration successful", data);
+        alert("login Sucessfully Done!!");
+        redirect("/");
+        // TODO: redirect or show success message
+      },
+      onError: (err) => {
+        console.error("login error", err);
+      },
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Logic for login
+    loginUser({ payload: formData })
   };
 
   return (
@@ -37,7 +59,7 @@ export default function LoginPage() {
             Join the elite. Access exclusive drops, technical insights, and personalized training gear.
           </p>
         </div>
-        
+
         {/* Decorative Technical Elements */}
         <div className="absolute top-16 left-16 flex flex-col gap-1 items-start opacity-20">
           <div className="w-24 h-[1px] bg-white"></div>
@@ -94,9 +116,10 @@ export default function LoginPage() {
 
             <button
               type="submit"
+              disabled={isPending}
               className="w-full bg-black text-white py-5 text-xs font-bold uppercase tracking-[0.15em] hover:bg-gray-900 transition-all flex items-center justify-center gap-3 mt-8"
             >
-              Sign In <ArrowRight size={16} />
+              {isPending ? "Signing In.." : "Sign In"} {isPending ? <Loader2 size={16} /> : <ArrowRight size={16} />}
             </button>
 
             <p className="mt-4 text-[10px] text-gray-500 font-medium leading-relaxed">

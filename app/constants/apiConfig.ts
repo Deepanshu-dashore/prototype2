@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
   // Product endpoints
   PRODUCT: {
     GET_ALL: `/products/get-all-product`,
+    MINIMAL_GET_ALL: `/products/get-product-minimal`,
     GET_BY_ID: (id: string | number) => `/products/get-product/${id}`,
     CREATE: `/products/create-product`,
     UPDATE: (id: string | number) => `/products/update-product/${id}`,
@@ -30,9 +31,9 @@ export const API_ENDPOINTS = {
   },
 
   REVIEW: {
-    CREATE: (productId: string | number) => `/review/${productId}`,  
-    UPDATE: (productId: string | number) => `/update-review/${productId}`,  
-    APPROVE: (productId: string | number, reviewId: string | number) => `/approve-review/${productId}/${reviewId}`,  
+    CREATE: (productId: string | number) => `/review/${productId}`,
+    UPDATE: (productId: string | number) => `/update-review/${productId}`,
+    APPROVE: (productId: string | number, reviewId: string | number) => `/approve-review/${productId}/${reviewId}`,
     GET_BY_PRODUCT: (productId: string | number) => `/get-reviews/${productId}`,
     REMOVE_MEDIA: (productId: string | number, reviewId: string | number, mediaIndex: number) => `/remove-media/${productId}/${reviewId}/${mediaIndex}`,
     DELETE: (productId: string | number, reviewId: string | number) => `/delete-review/${productId}/${reviewId}`,
@@ -84,7 +85,7 @@ export const API_ENDPOINTS = {
   WISHLIST: {
     ADD_TO_WISHLIST: `/add-to-wishlist`,
     GET_WISHLIST: `/wishlist`,
-    REMOVE_FROM_WISHLIST:  "/remove-wishlist",
+    REMOVE_FROM_WISHLIST: "/remove-wishlist",
     COUNT: `/count`,
   },
 };

@@ -178,7 +178,7 @@ const GridSkeleton = ({ title, subtitle }: { title: string; subtitle?: string })
 export default function Home() {
   const { data, isLoading, error } = useGetApi<{ data: any[] }>({
     key: "products",
-    url: API_ENDPOINTS.PRODUCT.GET_ALL,
+    url: API_ENDPOINTS.PRODUCT.MINIMAL_GET_ALL,
     requireAuth: false,
   });
   // console.log(data?.data, "data")

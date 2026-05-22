@@ -3,21 +3,102 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Mail, Lock, User, Phone, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Mail, Lock, User, Phone, CheckCircle2, Loader2 } from "lucide-react";
 import AuthInput from "../../components/auth/AuthInput";
+import { useMutationApi } from "../../hooks/useApi";
+import API_ENDPOINTS from "../constants/apiConfig";
+import { redirect } from "next/navigation";
+
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  mobileNumber: string;
+  password: string;
+  otp: string;
+  terms: boolean;
+  isVerify: boolean;
+  isOtpSend: boolean;
+}
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({
-    fullName: "",
+  const [formData, setFormData] = useState<FormData>({
+    firstName: "",
+    lastName: "",
     email: "",
-    phone: "",
+    mobileNumber: "",
     password: "",
+    otp: "",
     terms: false,
+    isVerify: false,
+    isOtpSend: false,
+  });
+
+  const { mutateAsync: registerUser, isPending, isError, error } = useMutationApi({
+    key: "register",
+    url: API_ENDPOINTS.USER.REGISTER,
+    method: "POST",
+    requireAuth: false,
+    options: {
+      onSuccess: (data) => {
+        console.log("Registration successful", data);
+        alert("Register Sucessfully Done!!");
+        redirect("/login");
+        // TODO: redirect or show success message
+      },
+      onError: (err) => {
+        console.error("Registration error", err);
+      },
+    },
+  });
+
+  const { mutateAsync: sendOtp, isPending: OtpIsPending, isError: isOtpError, error: otpError } = useMutationApi({
+    key: "sendOtp",
+    url: API_ENDPOINTS.USER.SEND_OTP,
+    method: "POST",
+    requireAuth: false,
+    options: {
+      onSuccess: (data) => {
+        console.log("Registration successful", data);
+        alert("Otp send")
+        setFormData({ ...formData, isOtpSend: true });
+        // TODO: redirect or show success message
+      },
+      onError: (err) => {
+        console.error("Registration error", err);
+      },
+    },
+  });
+
+  const { mutateAsync: verifyOtp, isPending: verifyOtpIsPending, isError: isverifyOtpError, error: verifyOtpError } = useMutationApi({
+    key: "verifyOtp",
+    url: API_ENDPOINTS.USER.VERIFY_OTP,
+    method: "POST",
+    requireAuth: false,
+    options: {
+      onSuccess: (data) => {
+        console.log("Registration successful", data);
+        // alert("Otp send")
+        setFormData({ ...formData, isVerify: true });
+        // TODO: redirect or show success message
+      },
+      onError: (err) => {
+        console.error("Registration error", err);
+      },
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic for registration
+
+    if (!formData.isVerify) {
+      sendOtp({ payload: { email: formData.email } } as any)
+      console.log("Otp send")
+    } else {
+      console.log("restring")
+      registerUser({ payload: formData } as any);
+    }
+
   };
 
   return (
@@ -39,7 +120,7 @@ export default function RegisterPage() {
             Unlock your true potential with gear engineered for the next generation of athletes.
           </p>
         </div>
-        
+
         {/* Decorative Technical Elements */}
         <div className="absolute top-16 left-16 flex flex-col gap-1 items-start opacity-20">
           <div className="w-24 h-[1px] bg-white"></div>
@@ -62,13 +143,22 @@ export default function RegisterPage() {
           </header>
 
           <form onSubmit={handleSubmit} className="space-y-2">
-            <AuthInput
-              label="Full Name"
-              type="text"
-              required
-              value={formData.fullName}
-              onChange={(val) => setFormData({ ...formData, fullName: val })}
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <AuthInput
+                label="First Name"
+                type="text"
+                required
+                value={formData.firstName}
+                onChange={(val) => setFormData({ ...formData, firstName: val })}
+              />
+              <AuthInput
+                label="Last Name"
+                type="text"
+                required
+                value={formData.lastName}
+                onChange={(val) => setFormData({ ...formData, lastName: val })}
+              />
+            </div>
 
             <AuthInput
               label="Email Address"
@@ -82,8 +172,8 @@ export default function RegisterPage() {
               label="Phone Number"
               type="tel"
               required
-              value={formData.phone}
-              onChange={(val) => setFormData({ ...formData, phone: val })}
+              value={formData.mobileNumber}
+              onChange={(val) => setFormData({ ...formData, mobileNumber: val })}
               placeholder="+91 |"
             />
 
@@ -94,6 +184,26 @@ export default function RegisterPage() {
               value={formData.password}
               onChange={(val) => setFormData({ ...formData, password: val })}
             />
+
+            {formData.isOtpSend &&
+              <div className="flex gap-3 items-baseline">
+                <AuthInput
+                  label="Otp"
+                  type="text"
+                  required={formData.isOtpSend}
+                  value={formData.otp}
+                  onChange={(val) => setFormData({ ...formData, otp: val })}
+                />
+                <button
+                  onClick={() => {
+                    verifyOtp({ payload: { email: formData.email, otp: formData.otp } } as any)
+                  }}
+                  type="button"
+                  className="w-full bg-black text-white py-4.5 text-xs font-bold uppercase tracking-[0.3em] hover:bg-gray-900 transition-all flex items-center justify-center gap-3">
+                  {verifyOtpIsPending ? "Verifing" : "Verify"}
+                </button>
+              </div>
+            }
 
             <div className="flex items-start gap-3 pt-6">
               <div className="relative flex items-center h-5">
@@ -113,9 +223,10 @@ export default function RegisterPage() {
 
             <button
               type="submit"
+              disabled={formData.isVerify ? isPending : formData.isOtpSend || OtpIsPending}
               className="w-full bg-black text-white py-5 text-xs font-bold uppercase tracking-[0.3em] hover:bg-gray-900 transition-all flex items-center justify-center gap-3 mt-8"
             >
-              Create Account <ArrowRight size={16} />
+              {formData.isVerify ? (isPending ? <Loader2 size={16} /> : <>Create Account <ArrowRight size={16} /></>) : (OtpIsPending ? "Sending" : "Send Otp")}
             </button>
           </form>
 
@@ -144,8 +255,8 @@ export default function RegisterPage() {
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">
               Already a member?
             </p>
-            <Link 
-              href="/login" 
+            <Link
+              href="/login"
               className="inline-block w-full py-4 border border-black text-black text-[10px] font-bold uppercase tracking-[0.15em] hover:bg-black hover:text-white transition-all duration-300"
             >
               Sign In

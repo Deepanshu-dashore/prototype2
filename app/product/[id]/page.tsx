@@ -28,6 +28,7 @@ import LoginPopUpModel from '@/components/shared/LoginPopUpModel';
 import ReviewModal from '@/components/shared/ReviewModal';
 import { useGetApi } from '@/hooks/useApi';
 import API_ENDPOINTS from '@/app/constants/apiConfig';
+import DisportLoader from '@/components/shared/DisportLoader';
 
 // Mock Product Data
 const product = {
@@ -128,7 +129,7 @@ interface ProductCategory {
 
 interface GetProduct {
   id: string;
-  name: string;
+  productName: string;
   productDescription: string;
   price: string;
   image: string;
@@ -137,17 +138,33 @@ interface GetProduct {
   isNew?: boolean;
   discount?: string;
   category: string | ProductCategory;
-
   images?: string[];
+  productImage?: string[]; // additional array of images
   variants?: any[];
   specification?: any[];
-  productDimensions: any;
-  itemModelNumber: string;
-  itemWeight: number;
-  genericName: string;
-  netQuantity: string;
-  reviewsCount: number;
-  whatsInTheBox: string[];
+  productDimensions?: any;
+  itemModelNumber?: string;
+  itemWeight?: number;
+  genericName?: string;
+  netQuantity?: string;
+  reviewsCount?: number;
+  whatsInTheBox?: string[];
+  returnPolicy?: string[];
+  shippingDetails?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+  // Additional optional fields from backend
+  productStatus?: string;
+  defaultSequence?: string[];
+  sizeChart?: string;
+  subcategoryShow?: boolean;
+  averageRating?: number;
+  averageSizeRating?: number;
+  averageComfortRating?: number;
+  averageQualityRating?: number;
+  totalRatings?: number;
+  totalReviews?: number;
 }
 
 function getCategoryLabel(category: GetProduct["category"]): string {
@@ -157,6 +174,7 @@ function getCategoryLabel(category: GetProduct["category"]): string {
 }
 
 function getProductGalleryImages(product: GetProduct): string[] {
+  if (product.productImage?.length) return product.productImage;
   if (product.images?.length) return product.images;
 
   const fromVariants = (product.variants ?? []).flatMap(
@@ -168,6 +186,8 @@ function getProductGalleryImages(product: GetProduct): string[] {
   if (product.image) return [product.image];
   return [];
 }
+
+
 
 function ProductDetailContent() {
   const params = useParams();
@@ -195,7 +215,7 @@ function ProductDetailContent() {
   const [inStock, setInStock] = useState(true);
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState('details');
+
   const [showCartModal, setShowCartModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [selectedTab, setSelectedTab] = useState("description");
@@ -226,18 +246,18 @@ function ProductDetailContent() {
     const firstAvailableSize =
       firstVariant.sizes?.find((s: { stock: number }) => s.stock > 0) ?? firstVariant.sizes?.[0];
 
-    setSelectedColor(firstVariant.color ?? "");
+    setSelectedColor(firstVariant.color?.trim() ?? "");
     setSelectedPrice(firstAvailableSize?.price ?? apiProduct.price ?? "");
     setSelectedSize(firstAvailableSize?.size ?? "M");
     setSelectvarid(firstAvailableSize?.id ?? null);
     setInStock((firstAvailableSize?.stock ?? 0) > 0);
-  }, [apiProduct?.id]);
+  }, [apiProduct?.productName]);
 
   if (!productId) {
     return <div>Invalid product</div>;
   }
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <DisportLoader />;
   }
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -304,7 +324,7 @@ function ProductDetailContent() {
           <ChevronRight size={10} />
           <Link href="/shop" className="hover:text-primary-bright">Shop</Link>
           <ChevronRight size={10} />
-          <span className="text-text-primary">{product.name}</span>
+          <span className="text-text-primary">{product.productName}</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
@@ -318,7 +338,7 @@ function ProductDetailContent() {
                   onClick={() => setSelectedImage(i)}
                   className={`relative w-20 aspect-square flex-shrink-0 bg-surface-soft border-2 transition-all duration-300 ${selectedImage === i ? 'border-primary-bright shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
-                  <Image src={img} alt={`${product.name} view ${i + 1}`} fill className="object-cover" />
+                  <Image src={img} alt={`${product.productName} view ${i + 1}`} fill className="object-cover" />
                 </button>
               ))}
             </div>
@@ -337,7 +357,7 @@ function ProductDetailContent() {
                   {mainImage ? (
                     <Image
                       src={mainImage}
-                      alt={product.name}
+                      alt={product.productName}
                       fill
                       priority
                       className="object-cover"
@@ -363,21 +383,35 @@ function ProductDetailContent() {
                 {categoryLabel}
               </span>
               <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-tighter leading-none mb-6">
-                {product.name}
+                {product.productName}
               </h1>
 
               <div className="flex items-center gap-6 mb-8">
-                <div className="text-3xl font-bold tracking-tight text-black">
-                  {product.price}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xl sm:text-2xl font-bold text-gray-900">
+                    ₹{selectedPrice}
+                  </span>
+                  {/* {Discount && (
+                    <>
+                      <span className="text-gray-400 line-through">
+                        ₹{selectedVarintPrice?.actualPrice || selectedPrice || 0}
+                      </span>
+                      <span className="text-sm font-medium text-orange-600">
+                        ({Discount}% OFF)
+                      </span>
+                    </>
+                  )} */}
                 </div>
-                <div className="flex items-center gap-1 border-l border-border pl-6">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={14} className={i < 4 ? "fill-primary-bright text-primary-bright" : "text-border"} />
-                    ))}
+                {product?.totalReviews !== 0 && (
+                  <div className="flex items-center gap-1 border-l border-border pl-6">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={14} className={i < 4 ? "fill-primary-bright text-primary-bright" : "text-border"} />
+                      ))}
+                    </div>
+                    <span className="text-[10px] font-bold text-text-secondary/60">({product?.totalReviews} REVIEWS)</span>
                   </div>
-                  <span className="text-[10px] font-bold text-text-secondary/60">({product.reviewsCount ?? reviewsData.totalReviews} REVIEWS)</span>
-                </div>
+                )}
               </div>
 
               {/* Description */}
@@ -463,13 +497,15 @@ function ProductDetailContent() {
                   const selectedVariant = variants.find((v: any) => v.color === selectedColor);
                   const sizes = selectedVariant?.sizes ?? [];
 
+                  console.log("selected size", sizes);
+
                   return sizes.map((sizeObj: any) => (
                     <button
                       key={sizeObj.id}
                       disabled={sizeObj.stock === 0}
                       onClick={() => {
                         setSelectedSize(sizeObj.size);
-                        setSelectedPrice(sizeObj.price);
+                        setSelectedPrice(sizeObj.price || 0);
                         setSelectvarid(sizeObj.id);
                         setInStock(sizeObj.stock > 0);
                       }}

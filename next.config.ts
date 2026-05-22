@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
         hostname: 'nexapoint-e-com-site-backend.onrender.com',
         pathname: '/uploads/**',
       },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        pathname: '/uploads/**',
+      },
     ],
   },
 };
