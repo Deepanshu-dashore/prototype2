@@ -3,41 +3,60 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { ArrowRight, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import AuthInput from "../../components/auth/AuthInput";
 import { useMutationApi } from "@/hooks/useApi";
 import API_ENDPOINTS from "../constants/apiConfig";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const { mutateAsync: loginUser, isPending, isError, error } = useMutationApi({
-    key: "register",
+  const { mutateAsync: loginUser, isPending } = useMutationApi({
+    key: "login",
     url: API_ENDPOINTS.USER.LOGIN,
     method: "POST",
     requireAuth: false,
     options: {
-      onSuccess: (data) => {
-        console.log("Registration successful", data);
-        alert("login Sucessfully Done!!");
-        redirect("/");
-        // TODO: redirect or show success message
+      onSuccess: (data: any) => {
+        console.log("Login successful", data);
+
+        // Store token if returned
+        if (data?.token || data?.accessToken) {
+          const token = data.token || data.accessToken;
+          document.cookie = `_AT=${encodeURIComponent(token)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+        }
+
+        toast.success("Signed in successfully!");
+        router.push("/");
       },
-      onError: (err) => {
-        console.error("login error", err);
+      onError: (err: any) => {
+        console.error("Login error", err);
+        const message =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Login failed. Please try again.";
+        toast.error(message);
       },
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic for login
-    loginUser({ payload: formData })
+
+    if (!formData.email || !formData.password) {
+      toast.error("Please fill in all fields.");
+      return;
+    }
+
+    loginUser({ payload: formData });
   };
 
   return (
@@ -117,13 +136,13 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full bg-black text-white py-5 text-xs font-bold uppercase tracking-[0.15em] hover:bg-gray-900 transition-all flex items-center justify-center gap-3 mt-8"
+              className="w-full bg-black text-white py-5 text-xs font-bold uppercase tracking-[0.15em] hover:bg-gray-900 transition-all flex items-center justify-center gap-3 mt-8 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isPending ? "Signing In.." : "Sign In"} {isPending ? <Loader2 size={16} /> : <ArrowRight size={16} />}
+              {isPending ? "Signing In.." : "Sign In"} {isPending ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
             </button>
 
             <p className="mt-4 text-[10px] text-gray-500 font-medium leading-relaxed">
-              By entering this site, you agree to the <Link href="/document/terms" className="text-black font-bold underline! underline-offset-2!">Terms & Conditions</Link> and <Link href="/document/privacy" className="text-black font-bold underline underline-offset-2">Privacy Policy</Link>.
+              By entering this site, you agree to the <Link href="/document/terms" className="text-black font-bold underline underline-offset-2">Terms & Conditions</Link> and <Link href="/document/privacy" className="text-black font-bold underline underline-offset-2">Privacy Policy</Link>.
             </p>
           </form>
 

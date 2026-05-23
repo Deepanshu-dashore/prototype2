@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
     GET_ALL: `/products/get-all-product`,
     MINIMAL_GET_ALL: `/products/get-product-minimal`,
     GET_BY_ID: (id: string | number) => `/products/get-product/${id}`,
+    FILTER: `/products/filter`,
     CREATE: `/products/create-product`,
     UPDATE: (id: string | number) => `/products/update-product/${id}`,
     UPDATE_IMAGE: (id: string | number) => `/products/update-image/${id}`,

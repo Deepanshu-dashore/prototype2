@@ -3,11 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Mail, Lock, User, Phone, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import AuthInput from "../../components/auth/AuthInput";
 import { useMutationApi } from "../../hooks/useApi";
 import API_ENDPOINTS from "../constants/apiConfig";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface FormData {
   firstName: string;
@@ -22,6 +23,7 @@ interface FormData {
 }
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
@@ -34,56 +36,69 @@ export default function RegisterPage() {
     isOtpSend: false,
   });
 
-  const { mutateAsync: registerUser, isPending, isError, error } = useMutationApi({
+  const { mutateAsync: registerUser, isPending } = useMutationApi({
     key: "register",
     url: API_ENDPOINTS.USER.REGISTER,
     method: "POST",
     requireAuth: false,
     options: {
-      onSuccess: (data) => {
+      onSuccess: (data: any) => {
         console.log("Registration successful", data);
-        alert("Register Sucessfully Done!!");
-        redirect("/login");
-        // TODO: redirect or show success message
+        toast.success("Account created successfully!");
+        router.push("/login");
       },
-      onError: (err) => {
+      onError: (err: any) => {
         console.error("Registration error", err);
+        const message =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Registration failed. Please try again.";
+        toast.error(message);
       },
     },
   });
 
-  const { mutateAsync: sendOtp, isPending: OtpIsPending, isError: isOtpError, error: otpError } = useMutationApi({
+  const { mutateAsync: sendOtp, isPending: OtpIsPending } = useMutationApi({
     key: "sendOtp",
     url: API_ENDPOINTS.USER.SEND_OTP,
     method: "POST",
     requireAuth: false,
     options: {
-      onSuccess: (data) => {
-        console.log("Registration successful", data);
-        alert("Otp send")
-        setFormData({ ...formData, isOtpSend: true });
-        // TODO: redirect or show success message
+      onSuccess: () => {
+        toast.success("OTP sent to your email!");
+        setFormData((prev) => ({ ...prev, isOtpSend: true }));
       },
-      onError: (err) => {
-        console.error("Registration error", err);
+      onError: (err: any) => {
+        console.error("OTP send error", err);
+        const message =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Failed to send OTP. Please try again.";
+        toast.error(message);
       },
     },
   });
 
-  const { mutateAsync: verifyOtp, isPending: verifyOtpIsPending, isError: isverifyOtpError, error: verifyOtpError } = useMutationApi({
+  const { mutateAsync: verifyOtp, isPending: verifyOtpIsPending } = useMutationApi({
     key: "verifyOtp",
     url: API_ENDPOINTS.USER.VERIFY_OTP,
     method: "POST",
     requireAuth: false,
     options: {
-      onSuccess: (data) => {
-        console.log("Registration successful", data);
-        // alert("Otp send")
-        setFormData({ ...formData, isVerify: true });
-        // TODO: redirect or show success message
+      onSuccess: () => {
+        toast.success("Email verified successfully!");
+        setFormData((prev) => ({ ...prev, isVerify: true }));
       },
-      onError: (err) => {
-        console.error("Registration error", err);
+      onError: (err: any) => {
+        console.error("OTP verify error", err);
+        const message =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Invalid OTP. Please try again.";
+        toast.error(message);
       },
     },
   });
@@ -92,14 +107,25 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (!formData.isVerify) {
-      sendOtp({ payload: { email: formData.email } } as any)
-      console.log("Otp send")
+      // Step 1: Send OTP
+      if (!formData.email) {
+        toast.error("Please enter your email first.");
+        return;
+      }
+      sendOtp({ payload: { email: formData.email } } as any);
     } else {
-      console.log("restring")
-      registerUser({ payload: formData } as any);
+      // Step 2: Register (only send API-relevant fields)
+      const { firstName, lastName, email, mobileNumber, password, otp } = formData;
+      registerUser({ payload: { firstName, lastName, email, mobileNumber, password, otp } } as any);
     }
-
   };
+
+  // Compute disabled state for submit button
+  const isSubmitDisabled = formData.isVerify
+    ? isPending
+    : formData.isOtpSend
+      ? true  // OTP sent but not yet verified — disable "Send OTP", user should verify first
+      : OtpIsPending;
 
   return (
     <main className="flex-1 flex flex-col lg:flex-row">
@@ -196,11 +222,17 @@ export default function RegisterPage() {
                 />
                 <button
                   onClick={() => {
-                    verifyOtp({ payload: { email: formData.email, otp: formData.otp } } as any)
+                    if (!formData.otp) {
+                      toast.error("Please enter the OTP.");
+                      return;
+                    }
+                    verifyOtp({ payload: { email: formData.email, otp: formData.otp } } as any);
                   }}
                   type="button"
-                  className="w-full bg-black text-white py-4.5 text-xs font-bold uppercase tracking-[0.3em] hover:bg-gray-900 transition-all flex items-center justify-center gap-3">
-                  {verifyOtpIsPending ? "Verifing" : "Verify"}
+                  disabled={verifyOtpIsPending || formData.isVerify}
+                  className="w-full bg-black text-white py-4.5 text-xs font-bold uppercase tracking-[0.3em] hover:bg-gray-900 transition-all flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {formData.isVerify ? "Verified ✓" : verifyOtpIsPending ? <><Loader2 size={14} className="animate-spin" /> Verifying</> : "Verify"}
                 </button>
               </div>
             }
@@ -217,16 +249,18 @@ export default function RegisterPage() {
                 />
               </div>
               <label htmlFor="terms" className="text-[11px] text-gray-500 font-medium leading-relaxed">
-                I have read and accepted the <Link href="/document/terms" className="text-black font-bold underline underline-offset-2">Terms & Conditions</Link>, the <Link href="/document/terms" className="text-black font-bold underline underline-offset-2">Terms & Conditions</Link> and the <Link href="/document/privacy" className="text-black font-bold underline underline-offset-2">Disport Privacy Policy</Link>.*
+                I have read and accepted the <Link href="/document/terms" className="text-black font-bold underline underline-offset-2">Terms & Conditions</Link> and the <Link href="/document/privacy" className="text-black font-bold underline underline-offset-2">Disport Privacy Policy</Link>.*
               </label>
             </div>
 
             <button
               type="submit"
-              disabled={formData.isVerify ? isPending : formData.isOtpSend || OtpIsPending}
-              className="w-full bg-black text-white py-5 text-xs font-bold uppercase tracking-[0.3em] hover:bg-gray-900 transition-all flex items-center justify-center gap-3 mt-8"
+              disabled={isSubmitDisabled}
+              className="w-full bg-black text-white py-5 text-xs font-bold uppercase tracking-[0.3em] hover:bg-gray-900 transition-all flex items-center justify-center gap-3 mt-8 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {formData.isVerify ? (isPending ? <Loader2 size={16} /> : <>Create Account <ArrowRight size={16} /></>) : (OtpIsPending ? "Sending" : "Send Otp")}
+              {formData.isVerify
+                ? (isPending ? <><Loader2 size={16} className="animate-spin" /> Creating Account...</> : <>Create Account <ArrowRight size={16} /></>)
+                : (OtpIsPending ? <><Loader2 size={16} className="animate-spin" /> Sending...</> : "Send Otp")}
             </button>
           </form>
 
