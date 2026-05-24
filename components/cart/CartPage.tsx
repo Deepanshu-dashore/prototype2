@@ -541,8 +541,6 @@ export default function CartPage() {
     <div className="min-h-screen bg-white text-black font-sans">
       {/* <Toaster position="bottom-right" /> */}
       
-      <Navbar />
-      
       <div className="max-w-7xl mx-auto px-4 pt-0 pb-32">
         {/* Progress Stepper (Sportswear Style) */}
         <div className="absolute left-0 right-0 bg-[#F6F6F6] border-y border-gray-100 py-6 mb-12">

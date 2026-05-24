@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Star, Camera, Trash2, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
+import { useMutationApi } from '@/hooks/useApi';
+import API_ENDPOINTS from '@/app/constants/apiConfig';
 
 interface ReviewModalProps {
   open: boolean;
@@ -37,6 +39,36 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ open, onClose, product, onRev
     setImages(images.filter((_, i) => i !== index));
   };
 
+  const productId = product?._id || product?.id || "";
+
+  const addReviewMutation = useMutationApi({
+    key: `reviews-${productId}`,
+    url: API_ENDPOINTS.REVIEW.CREATE(productId),
+    method: "POST",
+    requireAuth: true,
+    options: {
+      onSuccess: (data) => {
+        console.log("review added", data);
+        toast.success("Review submitted successfully!");
+        onClose();
+        
+        // Reset form
+        setRating(0);
+        setDescription("");
+        setImages([]);
+        setSizeRating(0);
+        setQualityRating(0);
+        setComfortRating(0);
+        
+        if (onReviewAdded) onReviewAdded();
+      },
+      onError: (err: any) => {
+        console.error("Error adding review", err);
+        toast.error(err.message || "Failed to add review");
+      },
+    },
+  });
+
   const handleSubmit = async () => {
     if (!rating) {
       toast.error("Please select a rating");
@@ -50,34 +82,17 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ open, onClose, product, onRev
 
     setIsSubmitting(true);
     try {
-      // Mock API Submission logic as per the user's template
-      console.log("Submitting review for:", product.id);
-      console.log("Data:", {
-        rating,
-        comment: description.trim(),
-        sizeRating,
-        qualityRating,
-        comfortRating,
-        imagesCount: images.length
+      await addReviewMutation.mutateAsync({
+        payload: {
+          rating,
+          comment: description.trim(),
+          sizeRating: sizeRating || 5,
+          qualityRating: qualityRating || 5,
+          comfortRating: comfortRating || 5,
+        },
       });
-
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      toast.success("Review submitted successfully!");
-      onClose();
-      
-      // Reset form
-      setRating(0);
-      setDescription("");
-      setImages([]);
-      setSizeRating(0);
-      setQualityRating(0);
-      setComfortRating(0);
-      
-      if (onReviewAdded) onReviewAdded();
-    } catch (error) {
-      toast.error("Failed to submit review. Please try again.");
+    } catch (err) {
+      console.error("Failed to submit review:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -107,8 +122,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ open, onClose, product, onRev
             <div className="flex flex-col md:flex-row bg-gray-50 border-b border-gray-100">
               <div className="relative w-full md:w-64 aspect-square bg-gray-200">
                 <Image 
-                  src={product.images[0]} 
-                  alt={product.name} 
+                  src={product?.images?.[0] || product?.productImage?.[0] || product?.image || "/disport_sneakers_product_1778407255046.png"} 
+                  alt={product?.name || product?.productName || "Product"} 
                   fill 
                   className="object-cover grayscale"
                 />

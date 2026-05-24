@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useEffect, useState, startTransition } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, X, CheckCircle2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ShoppingCart, X, Check } from "lucide-react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 
@@ -13,6 +12,7 @@ interface CartPopUpModelProps {
   onClose: () => void;
   product?: any;
   selectedSize?: string;
+  selectedColor?: string;
   modelSize?: "small" | "normal";
   position?: "top-right" | "top-left" | "center";
   price?: string | number;
@@ -23,160 +23,117 @@ export default function CartPopUpModel({
   onClose,
   product,
   selectedSize,
+  selectedColor,
   modelSize = "normal",
   position = "top-right",
   price
 }: CartPopUpModelProps) {
-  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!open || !mounted) return;
-
-    const timer = setTimeout(() => {
-      onClose();
-      startTransition(() => {
-        router.push("/cart");
-      });
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, [open, onClose, router, mounted]);
-
   if (typeof window === 'undefined') return null;
 
   const positionClasses = {
-    "top-right": "top-20 right-4",
-    "top-left": "top-20 left-4",
+    "top-right": "top-24 right-6",
+    "top-left": "top-24 left-6",
     "center": "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
   };
+
+  const imageSrc = product?.productImage?.[0] || product?.images?.[0] || product?.image || "/disport_sneakers_product_1778407255046.png";
 
   return createPortal(
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop - modern blur */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9997] bg-black/5 backdrop-blur-[2px]"
+            className="fixed inset-0 z-[9997] bg-black/30 backdrop-blur-[2px]"
             onClick={onClose}
           />
-          {/* Modal - Disport Premium Athletic Aesthetic */}
+          {/* Modal - Nike Premium Added-To-Cart Layout */}
           <motion.div
-            initial={{ opacity: 0, x: 20, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 20, scale: 0.95 }}
-            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-            className={`fixed bg-white shadow-[0_30px_60px_rgba(0,0,0,0.2)] z-[9998] border border-border 
-              ${modelSize === "small" ? "w-[300px] p-4" : "w-[360px] p-6"}
-              ${positionClasses[position]}
-            `}
+            initial={{ opacity: 0, y: -20, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.98 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className={`fixed bg-white border border-border shadow-[0_30px_60px_rgba(0,0,0,0.25)] z-[9998] p-6 rounded-none w-[360px] sm:w-[390px] ${positionClasses[position]}`}
           >
-            {modelSize === "small" ? (
-              <div className="relative flex items-center gap-4">
-                <div className="w-16 h-20 bg-surface-soft relative overflow-hidden flex-shrink-0">
-                  <Image
-                    src={product?.image || product?.productImage?.[0]}
-                    alt={product?.name || product?.productName}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              
-                <div className="flex-1 flex flex-col">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <CheckCircle2 size={12} className="text-primary-bright" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-black">
-                      Added to Bag
-                    </p>
-                  </div>
-                  <p className="text-xs font-bold uppercase tracking-tight line-clamp-1 mb-1">
-                    {product?.name || product?.productName}
-                  </p>
-                  <p className="text-[10px] font-bold text-primary-bright">
-                    {price ? `₹${price}` : product?.price}
-                  </p>
-                </div>
-              
-                <button
-                  onClick={onClose}
-                  className="absolute -top-1 -right-1 p-1 hover:bg-surface-soft transition-colors"
-                >
-                  <X size={14} className="text-text-secondary/40" />
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 size={18} className="text-primary-bright" />
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-black">
-                      Added to Bag
-                    </p>
-                  </div>
-                  <button
-                    onClick={onClose}
-                    className="p-1 hover:bg-surface-soft transition-colors"
-                  >
-                    <X size={18} className="text-text-secondary/40" />
-                  </button>
-                </div>
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 p-1.5 hover:bg-surface-soft text-text-secondary/40 hover:text-black transition-colors cursor-pointer"
+            >
+              <X size={16} />
+            </button>
 
-                <div className="flex gap-5 mb-8">
-                  <div className="w-24 h-32 bg-surface-soft relative overflow-hidden flex-shrink-0 shadow-sm">
-                    <Image
-                      src={product?.image || product?.productImage?.[0]}
-                      alt={product?.name || product?.productName}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 flex flex-col justify-center">
-                    <h3 className="font-bold text-sm uppercase tracking-tight text-black mb-1">
-                      {product?.name || product?.productName}
-                    </h3>
-                    <p className="text-text-secondary/60 text-[10px] font-bold uppercase tracking-widest mb-2">
+            {/* Header Status */}
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center text-white">
+                <Check size={12} className="stroke-[3]" />
+              </div>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-black font-heading">
+                Added To Bag
+              </p>
+            </div>
+
+            {/* Product Metadata Row */}
+            <div className="flex gap-4 mb-6">
+              <div className="w-20 h-24 bg-surface-soft relative overflow-hidden flex-shrink-0 shadow-sm border border-border/30">
+                <Image
+                  src={imageSrc}
+                  alt={product?.productName || product?.name || "Product"}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="flex-1 flex flex-col justify-center min-w-0">
+                <h3 className="font-black text-[12px] uppercase tracking-tight text-black mb-1.5 truncate font-heading leading-tight">
+                  {product?.productName || product?.name}
+                </h3>
+                <div className="space-y-0.5 mb-2">
+                  {selectedColor && (
+                    <p className="text-text-secondary/60 text-[9px] font-black uppercase tracking-widest">
+                      Color: {selectedColor}
+                    </p>
+                  )}
+                  {selectedSize && (
+                    <p className="text-text-secondary/60 text-[9px] font-black uppercase tracking-widest">
                       Size: {selectedSize}
                     </p>
-                    <p className="font-bold text-base text-black">
-                      {price ? `₹${price}` : product?.price}
-                    </p>
-                  </div>
+                  )}
                 </div>
+                <p className="font-bold text-[13px] text-black">
+                  {price ? `₹${price}` : product?.price}
+                </p>
+              </div>
+            </div>
 
-                <div className="flex flex-col gap-3">
-                  <Link href="/cart" passHref className="w-full">
-                    <button
-                      onClick={onClose}
-                      className="w-full bg-black text-white py-4 text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-primary-bright transition-all"
-                    >
-                      <span>View Bag</span>
-                      <ShoppingCart size={16} />
-                    </button>
-                  </Link>
-                  <button 
-                    onClick={onClose}
-                    className="text-[10px] font-bold uppercase tracking-widest text-text-secondary/40 hover:text-black transition-colors py-2"
-                  >
-                    Continue Shopping
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* Auto-redirect progress bar */}
-            <motion.div 
-              initial={{ width: "0%" }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 5, ease: "linear" }}
-              className="h-1 bg-primary-bright/10 absolute bottom-0 left-0"
-            />
+            {/* Nike Outlined Actions */}
+            <div className="flex flex-col gap-2">
+              <Link href="/cart" passHref className="w-full">
+                <button
+                  onClick={onClose}
+                  className="w-full bg-white hover:bg-surface-soft border border-black text-black py-3.5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>View Bag</span>
+                  <ShoppingCart size={12} />
+                </button>
+              </Link>
+              <Link href="/cart" passHref className="w-full">
+                <button
+                  onClick={onClose}
+                  className="w-full bg-black hover:bg-primary-bright text-white py-3.5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all cursor-pointer border border-transparent"
+                >
+                  Checkout
+                </button>
+              </Link>
+            </div>
           </motion.div>
         </>
       )}
