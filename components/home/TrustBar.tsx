@@ -18,7 +18,7 @@ const trustItems = [
     icon: "ph:lock-key-light",
     title: 'Secure Checkout',
     description: 'PCI-compliant encrypted payments',
-  },
+  }, 
   {
     icon: "ph:arrow-counter-clockwise-light",
     title: 'Easy Returns',

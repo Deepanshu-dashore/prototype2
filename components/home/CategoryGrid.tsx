@@ -13,7 +13,7 @@ const categories = [
     image: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=2070&auto=format&fit=crop',
     link: '/category/running'
   },
-  {
+  { 
     id: 2,
     name: 'TRAINING',
     subtitle: 'Built for Performance',

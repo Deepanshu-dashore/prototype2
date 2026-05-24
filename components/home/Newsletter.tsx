@@ -20,7 +20,7 @@ const Newsletter = () => {
               </h2>
               <p className="text-white/50 text-lg max-w-2xl mx-auto font-light leading-relaxed">
                 Get exclusive access to new drops, technical insights, and performance gear updates.
-              </p>
+              </p> 
             </div>
             
             <form className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto w-full" onSubmit={(e) => e.preventDefault()}>

@@ -15,7 +15,7 @@ const AnimatedNumber = ({ value }: { value: number }) => {
     <div className="flex select-none h-12 md:h-14 overflow-hidden items-center justify-center">
       {digits.map((digit, idx) => (
         <div 
-          key={idx} 
+          key={ idx} 
           className="relative w-[0.62em] h-full overflow-hidden flex items-center justify-center font-heading text-3xl md:text-4xl font-bold tracking-tight text-white"
         >
           <AnimatePresence mode="popLayout">

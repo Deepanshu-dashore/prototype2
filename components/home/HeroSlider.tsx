@@ -16,7 +16,7 @@ interface HeroSlide {
   imageAlt: string;
   /** Overlay colour/gradient — supports any CSS value */
   overlay: string;
-  /** Small eyebrow label above headline */
+  /** Small eyeb row label above headline */
   eyebrow: string;
   /** Main headline — can contain \n for line breaks */
   headline: string;

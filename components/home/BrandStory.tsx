@@ -14,7 +14,7 @@ const BrandStory = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-          >
+          > 
             <span className="text-primary-bright font-bold uppercase tracking-[0.3em] text-sm mb-6 block">
               Engineered for Movement
             </span>

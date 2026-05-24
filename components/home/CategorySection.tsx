@@ -11,7 +11,7 @@ interface CategoryProps {
   link: string;
   className?: string;
 }
-
+ 
 const CategoryCard = ({ title, image, link, className }: CategoryProps) => {
   return (
     <Link href={link} className={`group relative overflow-hidden rounded-lg block h-[450px] ${className}`}>

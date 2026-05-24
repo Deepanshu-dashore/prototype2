@@ -17,7 +17,7 @@ const categories = [
     marginClass: 'md:ml-0',
   },
   {
-    id: 2,
+    id: 2, 
     title: 'Gym',
     subtitle: 'Sit comfortably, feel at home!',
     image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=2070&auto=format&fit=crop',

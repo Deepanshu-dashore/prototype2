@@ -16,7 +16,7 @@ interface Slide {
     left: string;
   };
 }
-
+ 
 const slides: Slide[] = [
   {
     id: 0,
