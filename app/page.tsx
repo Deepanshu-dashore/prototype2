@@ -3,9 +3,12 @@
 import React from "react";
 import HeroSlider from "@/components/home/HeroSlider";
 import TrustBar from "@/components/home/TrustBar";
-import CategoryGrid from "@/components/home/CategoryGrid";
+import ShopBySport from "@/components/home/ShopBySport";
+import CountdownDeals from "@/components/home/CountdownDeals";
+import FabricShowcase from "@/components/home/FabricShowcase";
 import ProductGrid from "@/components/shared/ProductGrid";
 import BannerSlider from "@/components/home/BannerSlider";
+import Testimonials from "@/components/home/Testimonials";
 import Newsletter from "@/components/home/Newsletter";
 import { useGetApi } from "@/hooks/useApi";
 import API_ENDPOINTS from "@/app/constants/apiConfig";
@@ -189,7 +192,7 @@ export default function Home() {
       <>
         <HeroSlider />
         <TrustBar />
-        <CategoryGrid />
+        <ShopBySport />
         <GridSkeleton
           title="Trending Now"
           subtitle="Experience the latest in high-performance innovation and athletic style."
@@ -230,19 +233,22 @@ export default function Home() {
     <>
       <HeroSlider />
       <TrustBar />
-      <CategoryGrid />
+      <ShopBySport />
+      <FabricShowcase />
       <ProductGrid
         title="Trending Now"
         subtitle="Experience the latest in high-performance innovation and athletic style."
         products={trendingProductsToShow}
         showRating={false}
       />
+      <CountdownDeals />
       <BannerSlider />
       <ProductGrid
         title="Best Sellers"
         subtitle="Our highest-rated, most demanded gear engineered for everyday excellence."
         products={bestSellersToShow}
       />
+      <Testimonials />
       <Newsletter />
     </>
   );

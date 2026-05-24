@@ -96,9 +96,6 @@ const CategoryGrid = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-end mb-8">
           <div className="headerLeft">
-            {/* <span className="block font-body text-[0.875rem] font-bold text-[var(--color-primary-bright)] tracking-[0.15em] mb-3 uppercase">
-              BEST CATEGORIES
-            </span> */}
             <h2 className="heading-brand">
               FOR YOUR BRAND
             </h2>

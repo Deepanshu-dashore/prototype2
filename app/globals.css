@@ -21,7 +21,7 @@
   --color-success: #0061a2;
   --color-error: #ba1a1a;
 
-  --font-heading: var(--font-roboto), sans-serif;
+  --font-heading: var(--font-space-grotesk), sans-serif;
   --font-body: var(--font-lexend), sans-serif;
   --font-public: var(--font-public-sans), sans-serif;
   --font-comforter: var(--font-comforter-brush), cursive;
@@ -29,6 +29,26 @@
   --spacing-section: 120px;
   --max-width-site: 1440px;
 }
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
 
 :root {
   --container-padding: 1rem;

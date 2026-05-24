@@ -165,8 +165,8 @@ const Navbar = () => {
 
   // ── Nav links ─────────────────────────────────────────
   const navLinks = [
-    { name: "Men", href: "/products" },
-    { name: "Women", href: "/products" },
+    { name: "Men", href: "/products?gender=Men" },
+    { name: "Women", href: "/products?gender=Women" },
     { name: "Performance", href: "/products" },
     { name: "New Arrivals", href: "/products" },
     { name: "Sale", href: "/products" },
