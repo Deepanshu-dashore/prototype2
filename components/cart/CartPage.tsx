@@ -7,6 +7,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { toast, Toaster } from "react-hot-toast";
 import Navbar from "../layout/Navbar";
+import { useGetApi, useMutationApi } from "@/hooks/useApi";
+import API_ENDPOINTS from "@/app/constants/apiConfig";
+import { useAuth } from "@/hooks/useAuth";
 
 // Types
 interface Variant {
@@ -105,12 +108,10 @@ export default function CartPage() {
   const router = useRouter();
   const [pinCode, setPinCode] = useState("400001");
   const [currentStep, setCurrentStep] = useState(1);
-  const [isLogin, setIsLogin] = useState(true); // Default to true for dummy version
+  const { isAuthenticated: isLogin, isLoading: authLoading } = useAuth();
+  const [selectedVariants, setSelectedVariants] = useState<Record<number, any>>({});
+  const [address, setAddress] = useState<Address | null>(null);
 
-  // Local State for Cart and Addresses
-  const [cartItems, setCartItems] = useState<CartItem[]>(DUMMY_CART_ITEMS);
-  const [addresses, setAddresses] = useState<Address[]>(DUMMY_ADDRESSES);
-  
   // Address form state
   const [addressForm, setAddressForm] = useState({
     streetAddress: "",
@@ -128,50 +129,82 @@ export default function CartPage() {
   const [isPromoApplied, setIsPromoApplied] = useState(false);
   const [isPromoOpen, setIsPromoOpen] = useState(false);
 
-  // Calculations
-  const pricing = useMemo(() => {
-    const subtotal = cartItems.reduce((acc, item) => acc + (item.productActualPrice * item.quantity), 0);
-    const itemTotal = cartItems.reduce((acc, item) => acc + ((item.selectedVariant?.price || item.productDiscountPrice) * item.quantity), 0);
-    let discount = subtotal - itemTotal;
-    
-    // Apply Promo Discount (10% of itemTotal)
-    const promoDiscount = isPromoApplied ? Math.round(itemTotal * 0.1) : 0;
-    discount += promoDiscount;
-    
-    const shipping = itemTotal > 2000 || itemTotal === 0 ? 0 : 99;
-    const total = itemTotal - promoDiscount + shipping;
-    
-    return { subtotal, itemTotal, discount, promoDiscount, shipping, total };
-  }, [cartItems, isPromoApplied]);
+  // Fetch cart data using useGetApi hook
+  const { data: cartData, isLoading: cartLoading, error: cartError, refetch: refetchCart } = useGetApi<any>({
+    key: "cart",
+    url: API_ENDPOINTS.CART.GET_CART,
+    requireAuth: true,
+  }) as any;
 
-  const selectedAddress = useMemo(() => 
-    addresses.find(addr => addr._id === selectedAddressId), 
-  [addresses, selectedAddressId]);
+  // Fetch addresses using useGetApi hook
+  const { data: addressesData, isLoading: addressesLoading, error: addressesError, refetch: refetchAddresses } = useGetApi<any>({
+    key: "addresses",
+    url: API_ENDPOINTS.ADDRESS.GET_ALL,
+    requireAuth: true,
+  }) as any;
 
-  // Handlers
-  const handleRemove = (id: string) => {
-    setCartItems(prev => prev.filter(item => item._id !== id));
-    toast.success("Item removed from cart");
-  };
-
-  const increaseQty = (id: string) => {
-    setCartItems(prev => prev.map(item => 
-      item._id === id ? { ...item, quantity: item.quantity + 1 } : item
-    ));
-  };
-
-  const decreaseQty = (id: string, currentQty: number) => {
-    if (currentQty <= 1) {
-      handleRemove(id);
-    } else {
-      setCartItems(prev => prev.map(item => 
-        item._id === id ? { ...item, quantity: item.quantity - 1 } : item
-      ));
+  // Add address mutation
+  const { mutate: addAddress } = useMutationApi({
+    key: "addAddress",
+    url: API_ENDPOINTS.ADDRESS.CREATE,
+    method: "POST",
+    requireAuth: true,
+    options: {
+      onSuccess: () => {
+        setAddressForm({
+          streetAddress: "",
+          city: "",
+          state: "",
+          zipCode: "",
+          country: "India"
+        });
+        setIsAddingAddress(false);
+        refetchAddresses();
+        toast.success("Address added successfully");
+      },
+      onError: (error) => {
+        toast.error("Failed to add address");
+        console.error("Error adding address:", error);
+      },
     }
-  };
+  });
 
+  // Update address mutation
+  const { mutate: updateAddress } = useMutationApi({
+    key: "updateAddress",
+    url: API_ENDPOINTS.ADDRESS.UPDATE(editingAddressId || ""),
+    method: "PATCH",
+    requireAuth: true,
+    options: {
+      onSuccess: () => {
+        setAddressForm({
+          streetAddress: "",
+          city: "",
+          state: "",
+          zipCode: "",
+          country: "India"
+        });
+        setEditingAddressId(null);
+        setIsAddingAddress(false);
+        refetchAddresses();
+        toast.success("Address updated successfully");
+      },
+      onError: (error) => {
+        toast.error("Failed to update address");
+        console.error("Error updating address:", error);
+      },
+    }
+  });
+
+  const cartItems = useMemo(() => cartData?.data?.products || [], [cartData?.data?.products]);
+  const addresses = useMemo(() => addressesData?.data || [], [addressesData?.data]);
+
+  // Address handling functions
   const handleAddressFormChange = (field: string, value: string) => {
-    setAddressForm(prev => ({ ...prev, [field]: value }));
+    setAddressForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleAddAddress = () => {
@@ -179,11 +212,10 @@ export default function CartPage() {
       toast.error("Please fill in all required fields");
       return;
     }
-    const newAddress = { ...addressForm, _id: `addr_${Date.now()}` };
-    setAddresses(prev => [...prev, newAddress]);
-    setIsAddingAddress(false);
-    setAddressForm({ streetAddress: "", city: "", state: "", zipCode: "", country: "India" });
-    toast.success("Address added successfully");
+
+    addAddress({
+      payload: addressForm
+    });
   };
 
   const handleUpdateAddress = () => {
@@ -191,55 +223,261 @@ export default function CartPage() {
       toast.error("Please fill in all required fields");
       return;
     }
-    setAddresses(prev => prev.map(addr => 
-      addr._id === editingAddressId ? { ...addressForm, _id: editingAddressId } : addr
-    ));
-    setEditingAddressId(null);
-    setIsAddingAddress(false);
-    toast.success("Address updated successfully");
+
+    updateAddress({
+      payload: addressForm
+    });
   };
 
-  const handleEditAddress = (address: Address) => {
+  const handleEditAddress = (addressItem: Address) => {
     setAddressForm({
-      streetAddress: address.streetAddress || "",
-      city: address.city || "",
-      state: address.state || "",
-      zipCode: address.zipCode || "",
-      country: address.country || "India"
+      streetAddress: addressItem.streetAddress || "",
+      city: addressItem.city || "",
+      state: addressItem.state || "",
+      zipCode: addressItem.zipCode || "",
+      country: addressItem.country || "India"
     });
-    setEditingAddressId(address._id);
+    setEditingAddressId(addressItem._id);
     setIsAddingAddress(true);
+  };
+
+  const handleCancelEdit = () => {
+    setAddressForm({
+      streetAddress: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "India"
+    });
+    setEditingAddressId(null);
+    setIsAddingAddress(false);
   };
 
   const handleSelectAddress = (addressId: string) => {
     setIsSelectingAddress(true);
     setSelectedAddressId(addressId);
-    setTimeout(() => setIsSelectingAddress(false), 500);
+    setTimeout(() => {
+      setIsSelectingAddress(false);
+    }, 500);
+  };
+
+  const deliveryDaysByType: Record<string, number> = {
+    tshirt: 4,
+    shoes: 6,
+    electronics: 3,
+    default: 5,
+  };
+
+  const remotePinCodes = ["700001", "110001"];
+  const metroPinCodes = ["400001", "600001"];
+
+  function getDeliveryDays(productType: string, pinCodeVal: string) {
+    let baseDays =
+      deliveryDaysByType[productType] || deliveryDaysByType.default;
+    if (remotePinCodes.includes(pinCodeVal)) baseDays += 2;
+    if (metroPinCodes.includes(pinCodeVal)) baseDays -= 1;
+    return baseDays;
+  }
+
+  const removeFromCartMutation = useMutationApi({
+    key: 'cart',
+    url: '/carts/remove',
+    method: 'DELETE',
+    requireAuth: true,
+    options: {
+      onSuccess: () => {
+        refetchCart();
+        toast.success("Item removed from cart");
+      },
+      onError: (error) => {
+        console.error("Error removing item:", error);
+        toast.error("Failed to remove item from cart");
+      }
+    }
+  });
+
+  const updateCartQuantityMutation = useMutationApi({
+    key: 'cart',
+    url: '/carts/update-cart',
+    method: 'PATCH',
+    requireAuth: true,
+    options: {
+      onSuccess: () => {
+        refetchCart();
+      },
+      onError: (error) => {
+        console.error("Error updating quantity:", error);
+        toast.error("Failed to update quantity");
+      }
+    }
+  });
+
+  const handleRemove = async (cartProductId: string) => {
+    removeFromCartMutation.mutate({
+      id: cartProductId,
+      payload: { cartId: cartData?.data?.cartId },
+    });
   };
 
   const handleBuyNow = () => {
     toast.success("Order placed successfully!");
-    setCartItems([]);
     router.push("/");
   };
+
+  const handleCloseCart = () => {
+    router.push("/");
+  };
+
+  const increaseQty = (itemId: string) => {
+    const item = cartItems.find((x: any) => x._id === itemId);
+    if (!item) return;
+    const newQuantity = item.quantity + 1;
+    updateCartQuantityMutation.mutate({
+      id: item._id,
+      payload: { quantity: newQuantity, cartId: cartData?.data?.cartId }
+    });
+  };
+
+  const decreaseQty = (itemId: string, currentQuantity: number) => {
+    const item = cartItems.find((x: any) => x._id === itemId);
+    if (!item) return;
+    if (currentQuantity <= 1) {
+      handleRemove(itemId);
+      return;
+    }
+    
+    const newQuantity = currentQuantity - 1;
+    updateCartQuantityMutation.mutate({
+      id: item._id,
+      payload: { quantity: newQuantity, cartId: cartData?.data?.cartId }
+    });
+  };
+
+  const totalPrice = useMemo(() => cartItems.reduce(
+    (acc: number, item: any) => acc + (item.selectedVariant?.price || item.productDiscountPrice) * item.quantity,
+    0
+  ), [cartItems]);
+
+  const totalDiscount = useMemo(() => cartItems.reduce(
+    (acc: number, item: any) => {
+      const variantPrice = item.selectedVariant?.price || item.productDiscountPrice;
+      return acc + (item.productActualPrice - variantPrice) * item.quantity;
+    },
+    0
+  ), [cartItems]);
+
+  const finalAmount = useMemo(() => totalPrice + 4, [totalPrice]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black" />
+      </div>
+    );
+  }
+
+  if (!isLogin) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center py-20 px-6 max-w-md mx-auto">
+          {/* Login Icon */}
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <User className="w-10 h-10 text-gray-400" />
+          </div>
+          
+          {/* Main Message */}
+          <h2 className="text-2xl font-bold text-black mb-4">Please Sign In to View Your Cart</h2>
+          
+          {/* Description */}
+          <p className="text-gray-600 mb-8">
+            Sign in to access your saved items and continue shopping
+          </p>
+          
+          {/* Action Buttons */}
+          <div className="flex flex-row sm:flex-row gap-4 justify-center items-center">
+            <button 
+              onClick={() => router.push("/login")}
+              className="bg-black text-white px-8 py-3 text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer"
+            >
+              Sign In
+            </button>
+            <button 
+              onClick={() => router.push("/")}
+              className="border border-gray-300 text-gray-700 px-8 py-3 text-sm font-medium hover:border-black hover:text-black transition-colors cursor-pointer"
+            >
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Initialize selected variants based on cart items
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      const initialVariants: Record<number, any> = {};
+      cartItems.forEach((item: any, index: number) => {
+        if (item.selectedVariant && (item.selectedVariant.color || item.selectedVariant.size)) {
+          initialVariants[index] = {
+            color: item.selectedVariant.color,
+            size: item.selectedVariant.size,
+            price: item.selectedVariant.price,
+            discountPrice: item.selectedVariant.price,
+            variantId: null
+          };
+        }
+      });
+      setSelectedVariants(initialVariants);
+    }
+
+    if (addresses.length > 0) {
+      const selectedAddress = addresses.find(
+        (addr: any) => addr._id === selectedAddressId
+      );
+
+      if (selectedAddress) {
+        setAddress(selectedAddress);
+        console.log("Selected address:", selectedAddress);
+      } else {
+        console.log("No address found with the given ID");
+      }
+    }
+
+    console.log("selectedid", selectedAddressId);
+  }, [cartItems, selectedAddressId, addresses]);
+
+  // Compatibility mapping for existing template variables
+  const pricing = useMemo(() => {
+    const promoDiscount = isPromoApplied ? Math.round(totalPrice * 0.1) : 0;
+    const shipping = totalPrice > 2000 || totalPrice === 0 ? 0 : 99;
+    const total = totalPrice - promoDiscount + shipping;
+    
+    return {
+      subtotal: totalPrice + totalDiscount,
+      itemTotal: totalPrice,
+      discount: totalDiscount + promoDiscount,
+      promoDiscount,
+      shipping,
+      total: total
+    };
+  }, [totalPrice, totalDiscount, isPromoApplied]);
+
+  const selectedAddress = useMemo(() => 
+    addresses.find((addr: any) => addr._id === selectedAddressId), 
+  [addresses, selectedAddressId]);
 
   const handleApplyPromo = () => {
     if (!promoCode.trim()) {
       toast.error("Please enter a promo code");
       return;
     }
-    // Dummy logic
     if (promoCode.toUpperCase() === "DISPORT10") {
       setIsPromoApplied(true);
       toast.success("Promo code applied! 10% discount added.");
     } else {
       toast.error("Invalid promo code");
     }
-  };
-
-  const getDeliveryDays = (productType: string, pinCode: string) => {
-    const deliveryDaysByType: Record<string, number> = { tshirt: 4, shoes: 6, default: 5 };
-    return deliveryDaysByType[productType] || deliveryDaysByType.default;
   };
 
   const renderStepContent = () => {
@@ -255,7 +493,7 @@ export default function CartPage() {
             </div>
             
             <div className="space-y-4">
-              {cartItems.map((item, index) => (
+              {cartItems.map((item: CartItem, index: number) => (
                 <div key={item._id} className="bg-white border border-gray-200 p-4">
                   <div className="flex gap-4">
                     <div className="relative w-24 h-24 bg-gray-50 flex-shrink-0">
@@ -340,7 +578,7 @@ export default function CartPage() {
 
             <div className="p-6">
               <div className="grid gap-4 md:grid-cols-2 mb-8">
-                {addresses.map((addr) => (
+                {addresses.map((addr: Address) => (
                   <div 
                     key={addr._id} 
                     onClick={() => handleSelectAddress(addr._id)}
@@ -478,7 +716,7 @@ export default function CartPage() {
           <div className="bg-white border border-gray-200 p-6">
             <h2 className="text-xs font-bold uppercase tracking-[0.2em] mb-6">Review Order</h2>
             <div className="space-y-4 mb-8">
-              {cartItems.map((item) => (
+              {cartItems.map((item: CartItem) => (
                 <div key={item._id} className="flex gap-4 p-4 bg-gray-50">
                   <div className="w-16 h-16 relative bg-white">
                     <Image src={item.productImage} alt={item.productName} fill className="object-cover p-1" />

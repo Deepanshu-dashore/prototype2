@@ -368,9 +368,9 @@ const Navbar = () => {
                   icon="tabler:shopping-bag"
                   className="w-[24px] h-[24px] group-hover:scale-105 transition-transform text-[#1a1c1c]"
                 />
-                <span className="absolute top-[-2px] right-[-2px] bg-[#ec7700] text-white text-[11px] w-[18px] h-[18px] flex items-center justify-center rounded-full font-bold shadow-sm">
+               {  isClient && cartCount > 0 && (<span className="absolute top-[-2px] right-[-2px] bg-[#ec7700] text-white text-[11px] w-[18px] h-[18px] flex items-center justify-center rounded-full font-bold shadow-sm">
                   {isClient ? cartCount : 0}
-                </span>
+                </span>)}
               </Link>
             </div>
           </div>

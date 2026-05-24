@@ -1,7 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/app/store/store";
+import {
+  updateFilter as updateFilterAction,
+  setFilters as setFiltersAction,
+  clearFilters as clearFiltersAction,
+  setSearchQuery as setSearchQueryAction,
+  FiltersState
+} from "@/app/store/filterSlice";
 
 export interface Filters {
   category?: string;
@@ -16,36 +25,27 @@ export interface Filters {
   [key: string]: string | undefined;
 }
 
-export function useFilter(initialFilters: Filters = {}) {
+export function useFilter(initialFilters: Partial<FiltersState> = {}) {
   const router = useRouter();
-  const [filters, setFilters] = useState<Filters>({
-    page: "1",
-    limit: "12",
-    ...initialFilters,
-  });
+  const dispatch = useDispatch();
+
+  // Select active filters from Redux store
+  const filters = useSelector((state: RootState) => state.filter);
+
+  // Initialize filters on mount if initialFilters are provided
+  useEffect(() => {
+    if (initialFilters && Object.keys(initialFilters).length > 0) {
+      dispatch(setFiltersAction(initialFilters));
+    }
+  }, [dispatch]);
 
   const updateFilter = useCallback((key: string, value: string) => {
-    setFilters((prev) => {
-      const updated = { ...prev };
-
-      if (!value || value === "") {
-        delete updated[key];
-      } else {
-        updated[key] = value;
-      }
-
-      // Reset to page 1 when any filter changes (except page itself)
-      if (key !== "page") {
-        updated.page = "1";
-      }
-
-      return updated;
-    });
-  }, []);
+    dispatch(updateFilterAction({ key, value }));
+  }, [dispatch]);
 
   const clearFilters = useCallback(() => {
-    setFilters({ page: "1", limit: "12" });
-  }, []);
+    dispatch(clearFiltersAction());
+  }, [dispatch]);
 
   // Navigate to /products with search query
   const searchProducts = useCallback(
@@ -54,13 +54,9 @@ export function useFilter(initialFilters: Filters = {}) {
       if (query.trim()) params.set("search", query.trim());
       router.push(`/products${params.toString() ? `?${params}` : ""}`);
 
-      setFilters((prev) => ({
-        ...prev,
-        search: query.trim() || undefined,
-        page: "1",
-      }));
+      dispatch(setSearchQueryAction(query));
     },
-    [router]
+    [router, dispatch]
   );
 
   const activeFilterCount = Object.entries(filters).filter(

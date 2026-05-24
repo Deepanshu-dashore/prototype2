@@ -3,6 +3,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { Toaster } from "react-hot-toast";
+import { Provider } from "react-redux";
+import { store } from "./store/store";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -19,6 +21,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <Provider store={store}>
       <Toaster
         position="top-right"
         toastOptions={{
@@ -48,6 +51,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         }}
       />
       {children}
+      </Provider>
     </QueryClientProvider>
   );
 }

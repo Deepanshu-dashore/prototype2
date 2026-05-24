@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useGetApi } from "./useApi";
 import API_ENDPOINTS from "@/app/constants/apiConfig";
+import { RootState } from "@/app/store/store";
+import { setUser, logout as logoutAction, setLoading } from "@/app/store/userSlice";
 
 // ── Cookie helper ────────────────────────────────────────
 const getCookie = (name: string) => {
@@ -28,8 +31,14 @@ interface User {
 }
 
 export function useAuth() {
+  const dispatch = useDispatch();
   const [isClient, setIsClient] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+
+  // Redux Selectors
+  const user = useSelector((state: RootState) => state.user.user);
+  const reduxIsAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
+  const reduxLoading = useSelector((state: RootState) => state.user.loading);
 
   useEffect(() => {
     setIsClient(true);
@@ -37,20 +46,33 @@ export function useAuth() {
     setToken(t);
   }, []);
 
-  const isAuthenticated = isClient && !!token;
+  const hasToken = isClient && !!token;
 
   // Fetch current user if authenticated
-  const { data: userData, isLoading } = useGetApi<{ data: User }>({
+  const { data: userData, isLoading: isQueryLoading } = useGetApi<{ data: User }>({
     key: "currentUser",
     url: API_ENDPOINTS.USER.CURRENT_USER,
     requireAuth: true,
     options: {
-      enabled: isAuthenticated,
+      enabled: hasToken,
       staleTime: 5 * 60 * 1000, // cache for 5 minutes
     },
   });
 
-  const user: User | null = userData?.data || null;
+  const apiUser = userData?.data || null;
+
+  // Sync with Redux Store
+  useEffect(() => {
+    if (isClient) {
+      if (!token) {
+        dispatch(setUser(null));
+      } else if (apiUser) {
+        dispatch(setUser(apiUser));
+      } else if (!isQueryLoading && !apiUser) {
+        dispatch(setUser(null));
+      }
+    }
+  }, [apiUser, token, isClient, isQueryLoading, dispatch]);
 
   const getFullName = useCallback(() => {
     if (!user) return "Guest";
@@ -68,15 +90,16 @@ export function useAuth() {
     deleteCookie("_AT");
     deleteCookie("authToken");
     setToken(null);
+    dispatch(logoutAction());
     // Force re-render
     window.location.reload();
-  }, []);
+  }, [dispatch]);
 
   return {
     user,
-    isAuthenticated,
+    isAuthenticated: reduxIsAuthenticated,
     isClient,
-    isLoading,
+    isLoading: reduxLoading || isQueryLoading,
     logout,
     getFullName,
     getInitials,
