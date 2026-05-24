@@ -8,6 +8,7 @@ import CountdownDeals from "@/components/home/CountdownDeals";
 import FabricShowcase from "@/components/home/FabricShowcase";
 import ProductGrid from "@/components/shared/ProductGrid";
 import BannerSlider from "@/components/home/BannerSlider";
+import CategoryGrid from "@/components/home/CategoryGrid";
 import Testimonials from "@/components/home/Testimonials";
 import Newsletter from "@/components/home/Newsletter";
 import { useGetApi } from "@/hooks/useApi";
@@ -193,6 +194,7 @@ export default function Home() {
         <HeroSlider />
         <TrustBar />
         <ShopBySport />
+        <CategoryGrid />
         <GridSkeleton
           title="Trending Now"
           subtitle="Experience the latest in high-performance innovation and athletic style."
@@ -235,6 +237,7 @@ export default function Home() {
       <TrustBar />
       <ShopBySport />
       <FabricShowcase />
+      <CategoryGrid />
       <ProductGrid
         title="Trending Now"
         subtitle="Experience the latest in high-performance innovation and athletic style."
