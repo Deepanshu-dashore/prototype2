@@ -87,54 +87,56 @@ export default function BannerSlider() {
       </AnimatePresence>
 
       {/* Content Overlay */}
-      <div className={`absolute inset-0 flex flex-col justify-center p-8 md:p-16 pb-24 container mx-auto ${
-        slides[safeCurrent].align === 'left' 
-          ? 'items-start text-left md:pl-20' 
-          : 'items-center text-center'
-      }`}>
-        {/* Title */}
-        <motion.h2 
-          key={`title-${safeCurrent}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-white mb-3 leading-tight text-3xl md:text-5xl lg:text-6xl font-bold uppercase tracking-[0.05em] font-heading"
-        >
-          {slides[safeCurrent].title.split('\n').map((line, idx) => (
-            <span key={idx} className="block">{line}</span>
-          ))}
-        </motion.h2>
-
-        {/* Description */}
-        <motion.p
-          key={`desc-${safeCurrent}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className={`text-white/80 text-sm md:text-base font-body mb-8 ${
-            slides[safeCurrent].align === 'left' ? 'max-w-md leading-relaxed' : 'max-w-2xl mx-auto'
-          }`}
-        >
-          {slides[safeCurrent].description.split('\n').map((line, idx) => (
-            <span key={idx} className="block">{line}</span>
-          ))}
-        </motion.p>
-
-        {/* CTA Button */}
-        <motion.div
-          key={`cta-${safeCurrent}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <a 
-            href={slides[safeCurrent].ctaLink}
-            className="group inline-flex items-center gap-3 bg-[#ec7700] hover:bg-orange-600 text-white px-8 py-4 text-xs font-bold uppercase tracking-widest transition-all duration-300 rounded-none font-body shadow-lg hover:shadow-orange-500/10 cursor-pointer"
+      <div className="absolute inset-0 z-10 flex items-center">
+        <div className={`container mx-auto px-8 md:px-16 lg:px-32 flex flex-col justify-center h-full ${
+          slides[safeCurrent].align === 'left' 
+            ? 'items-start text-left' 
+            : 'items-center text-center'
+        }`}>
+          {/* Title */}
+          <motion.h2 
+            key={`title-${safeCurrent}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-white mb-3 leading-tight text-3xl md:text-5xl lg:text-6xl font-bold uppercase tracking-[0.05em] font-heading"
           >
-            <span>{slides[safeCurrent].ctaText}</span>
-            <span className="group-hover:translate-x-1.5 transition-transform duration-300">→</span>
-          </a>
-        </motion.div>
+            {slides[safeCurrent].title.split('\n').map((line, idx) => (
+              <span key={idx} className="block">{line}</span>
+            ))}
+          </motion.h2>
+
+          {/* Description */}
+          <motion.p
+            key={`desc-${safeCurrent}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className={`text-white/80 text-sm md:text-base font-body mb-8 ${
+              slides[safeCurrent].align === 'left' ? 'max-w-md leading-relaxed' : 'max-w-2xl mx-auto'
+            }`}
+          >
+            {slides[safeCurrent].description.split('\n').map((line, idx) => (
+              <span key={idx} className="block">{line}</span>
+            ))}
+          </motion.p>
+
+          {/* CTA Button */}
+          <motion.div
+            key={`cta-${safeCurrent}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <a 
+              href={slides[safeCurrent].ctaLink}
+              className="group inline-flex items-center gap-3 bg-[#ec7700] hover:bg-orange-600 text-white px-8 py-4 text-xs font-bold uppercase tracking-widest transition-all duration-300 rounded-none font-body shadow-lg hover:shadow-orange-500/10 cursor-pointer"
+            >
+              <span>{slides[safeCurrent].ctaText}</span>
+              <span className="group-hover:translate-x-1.5 transition-transform duration-300">→</span>
+            </a>
+          </motion.div>
+        </div>
       </div>
 
       {/* Indicators - Bottom Center */}
