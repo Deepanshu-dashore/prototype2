@@ -5,20 +5,20 @@ import { motion } from 'framer-motion';
 
 const Newsletter = () => {
   return (
-    <section className="bg-black py-24 border-t border-white/10">
+    <section className="bg-black py-16 border-t border-white/10">
       <div className="container flex justify-center">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="flex flex-col gap-6"
+            className="flex flex-col gap-4"
           >
             <div>
-              <h2 className="text-white text-4xl md:text-6xl font-bold uppercase tracking-tighter mb-4">
+              <h2 className="text-white text-2xl md:text-4xl font-bold uppercase tracking-tight mb-2">
                 JOIN THE ELITE
               </h2>
-              <p className="text-white/50 text-lg max-w-2xl mx-auto font-light leading-relaxed">
+              <p className="text-white/50 text-sm max-w-xl mx-auto font-light leading-relaxed">
                 Get exclusive access to new drops, technical insights, and performance gear updates.
               </p> 
             </div>

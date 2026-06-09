@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { Icon } from "@iconify/react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -11,13 +11,8 @@ type TextAlignment = "left" | "center" | "right";
 
 interface HeroSlide {
   id: number;
-  /** Background image path (public folder or URL) */
-  image: string;
-  imageAlt: string;
-  /** Overlay colour/gradient — supports any CSS value */
-  overlay: string;
-  /** Small eyeb row label above headline */
-  eyebrow: string;
+  /** Background video path (public folder or URL) */
+  video: string;
   /** Main headline — can contain \n for line breaks */
   headline: string;
   /** Highlighted part of the headline */
@@ -41,10 +36,7 @@ interface HeroSlide {
 const slides: HeroSlide[] = [
   {
     id: 1,
-    image: "/disport_hero_cinematic_1778406982113.png",
-    imageAlt: "Disport High-Performance Athlete",
-    overlay: "linear-gradient(to right, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.42) 55%, transparent 100%)",
-    eyebrow: "Engineered for Motion",
+    video: "/hero/intro1.mp4",
     headline: "PRECISION\n",
     headlineAccent: "PERFORMANCE",
     body: "Experience the next generation of athletic gear. Designed for speed, built for endurance, and engineered to push your limits.",
@@ -56,10 +48,7 @@ const slides: HeroSlide[] = [
   },
   {
     id: 2,
-    image: "/disport_running_category_1778407053113.png",
-    imageAlt: "Disport Running — Velocity Series",
-    overlay: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.70) 100%)",
-    eyebrow: "Velocity Series — SS26",
+    video: "/hero/intro2.mp4",
     headline: "RUN\n",
     headlineAccent: "FASTER",
     body: "Biomechanically tuned outsoles. Ultra-responsive foam. The Velocity V2 is built for athletes who refuse to slow down.",
@@ -71,10 +60,7 @@ const slides: HeroSlide[] = [
   },
   {
     id: 3,
-    image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop",
-    imageAlt: "Disport Training — Elite Gymwear",
-    overlay: "linear-gradient(to left, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.42) 55%, transparent 100%)",
-    eyebrow: "Elite Gymwear",
+    video: "/hero/intro1.mp4",
     headline: "TRAIN\n",
     headlineAccent: "HARDER",
     body: "Maximum compression, zero compromise. Our Armor Series redefines what performance gymwear can achieve at every rep.",
@@ -86,8 +72,6 @@ const slides: HeroSlide[] = [
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const AUTOPLAY_INTERVAL = 6000; // ms
 
 function alignClass(align: TextAlignment): string {
   return align === "center"
@@ -149,9 +133,6 @@ const HeroSlider = () => {
   const [direction, setDirection] = useState(1);
   const [progress, setProgress] = useState(0);
 
-  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const autoplayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const total = slides.length;
 
   // ── Navigation helpers ──────────────────────────────────────────────────────
@@ -169,28 +150,16 @@ const HeroSlider = () => {
   const next = useCallback(() => goTo((current + 1) % total, 1), [current, goTo, total]);
   const prev = useCallback(() => goTo((current - 1 + total) % total, -1), [current, goTo, total]);
 
-  // ── Autoplay + progress bar ─────────────────────────────────────────────────
-  useEffect(() => {
-    // Tick every 50 ms → 6000ms total = 120 ticks
-    const tickMs = 50;
-    const ticks = AUTOPLAY_INTERVAL / tickMs;
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = e.currentTarget;
+    if (video.duration) {
+      setProgress((video.currentTime / video.duration) * 100);
+    }
+  };
 
-    progressRef.current = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 100) return 100;
-        return p + 100 / ticks;
-      });
-    }, tickMs);
-
-    autoplayRef.current = setTimeout(() => {
-      next();
-    }, AUTOPLAY_INTERVAL);
-
-    return () => {
-      if (progressRef.current) clearInterval(progressRef.current);
-      if (autoplayRef.current) clearTimeout(autoplayRef.current);
-    };
-  }, [current, next]);
+  const handleVideoEnded = () => {
+    next();
+  };
 
   // ── Keyboard navigation ─────────────────────────────────────────────────────
 
@@ -229,7 +198,7 @@ const HeroSlider = () => {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* ── Background Image ────────────────────────────────────────────────── */}
+      {/* ── Background Video ────────────────────────────────────────────────── */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
           key={`bg-${current}`}
@@ -240,18 +209,15 @@ const HeroSlider = () => {
           animate="center"
           exit="exit"
         >
-          <Image
-            src={slide.image}
-            alt={slide.imageAlt}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-          {/* Overlay */}
-          <div
-            className="absolute inset-0"
-            style={{ background: slide.overlay }}
+          <video
+            src={slide.video}
+            autoPlay
+            muted
+            playsInline
+            preload="auto"
+            onTimeUpdate={handleTimeUpdate}
+            onEnded={handleVideoEnded}
+            className="w-full h-full object-cover"
           />
         </motion.div>
       </AnimatePresence>
@@ -285,15 +251,13 @@ const HeroSlider = () => {
             exit="exit"
             className={`${contentMaxWidthClass(slide.align)} flex flex-col ${alignClass(slide.align)}`}
           >
-            {/* Eyebrow */}
-            <span className="text-[var(--color-primary-bright)] font-bold uppercase tracking-[0.3em] text-xs md:text-sm mb-4 block">
-              {slide.eyebrow}
-            </span>
-
             {/* Headline */}
             <h1
               className="text-white font-bold mb-6 leading-[0.9] tracking-tighter"
-              style={{ fontSize: "clamp(2.5rem, 7vw, 5.5rem)" }}
+              style={{ 
+                fontSize: "clamp(2rem, 6vw, 4.5rem)",
+                textShadow: "0 8px 24px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3)"
+              }}
             >
               {slide.headline.split("\n").map((line, i) =>
                 line ? (
@@ -322,15 +286,21 @@ const HeroSlider = () => {
             >
               <Link 
                 href={slide.cta.href} 
-                className="btn bg-[var(--color-primary-bright)] !text-white px-14 py-6 rounded-none font-black text-sm tracking-[0.2em] hover:bg-black transition-all duration-300 shadow-2xl uppercase border-none"
+                className="group/btn1 flex items-center gap-3 bg-white text-[#382830] text-xs md:text-sm font-body font-bold rounded-full px-6 py-3 transition-all duration-300 hover:bg-gray-100 hover:scale-105 active:scale-95 shadow-md cursor-pointer"
               >
-                {slide.cta.label}
+                <span>{slide.cta.label}</span>
+                <span className="bg-[#382830] text-white w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-300 group-hover/btn1:rotate-45">
+                  <Icon icon="ph:arrow-up-right-bold" className="text-xs" />
+                </span>
               </Link>
               <Link 
                 href={slide.ctaSecondary.href} 
-                className="btn border-2 border-white !text-white px-14 py-6 rounded-none font-black text-sm tracking-[0.2em] hover:bg-white hover:!text-black transition-all duration-300 backdrop-blur-md uppercase"
+                className="group/btn2 flex items-center gap-3 bg-white/10 backdrop-blur-md text-white border border-white/20 text-xs md:text-sm font-body font-bold rounded-full px-6 py-3 transition-all duration-300 hover:bg-white/20 hover:scale-105 active:scale-95 shadow-md cursor-pointer"
               >
-                {slide.ctaSecondary.label}
+                <span>{slide.ctaSecondary.label}</span>
+                <span className="bg-white/20 text-white w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-300 group-hover/btn2:rotate-45">
+                  <Icon icon="ph:arrow-up-right-bold" className="text-xs" />
+                </span>
               </Link>
             </div>
           </motion.div>
@@ -342,61 +312,27 @@ const HeroSlider = () => {
 
 
       {/* ── Slide Navigation (Bottom Right) ─────────────────────────────────── */}
-      <div className="absolute bottom-12 right-12 z-20 flex flex-col items-end gap-6">
-        {/* Slide Counter & Arrows */}
-        <div className="flex items-center gap-6">
-          <div className="flex items-baseline gap-1">
-            <span className="font-bold text-white text-4xl" style={{ fontFamily: "var(--font-heading)", lineHeight: 1 }}>
-              0{current + 1}
-            </span>
-            <span className="text-white/40 font-light text-base">/ 0{total}</span>
-          </div>
-          
-          <div className="flex gap-2">
-            <button
-              onClick={prev}
-              className="w-12 h-12 flex items-center justify-center border border-white/20 text-white hover:bg-white hover:text-black transition-all duration-300"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </button>
-            <button
-              onClick={next}
-              className="w-12 h-12 flex items-center justify-center border border-white/20 text-white hover:bg-white hover:text-black transition-all duration-300"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Progress Bars (Technical Indicators) */}
-        <div className="flex gap-3">
-          {slides.map((s, i) => (
-            <button
-              key={s.id}
-              onClick={() => goTo(i)}
-              className="group relative h-1 w-24 bg-white/10 overflow-hidden transition-all"
-            >
-              <motion.div
-                className="absolute inset-0 bg-white/20"
-                initial={{ x: "-100%" }}
-                animate={{ x: i < current ? "0%" : "-100%" }}
-                transition={{ duration: 0.5 }}
-              />
-              {i === current && (
-                <motion.div
-                  className="absolute inset-0 bg-[var(--color-primary-bright)]"
-                  initial={{ x: "-100%" }}
-                  animate={{ x: "0%" }}
-                  transition={{ duration: AUTOPLAY_INTERVAL / 1000, ease: "linear" }}
-                  key={`progress-${current}`}
-                />
-              )}
-            </button>
-          ))}
+      <div className="absolute bottom-12 right-12 z-20 flex items-center gap-6">
+        {/* Sliding Navigation Arrows */}
+        <div className="flex gap-2">
+          <button
+            onClick={prev}
+            className="w-12 h-12 flex items-center justify-center border border-white/20 text-white hover:bg-white hover:text-black transition-all duration-300 cursor-pointer"
+            aria-label="Previous Slide"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <button
+            onClick={next}
+            className="w-12 h-12 flex items-center justify-center border border-white/20 text-white hover:bg-white hover:text-black transition-all duration-300 cursor-pointer"
+            aria-label="Next Slide"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
         </div>
       </div>
 

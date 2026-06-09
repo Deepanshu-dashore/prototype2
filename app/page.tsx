@@ -57,6 +57,17 @@ const fallbackTrending = [
     imageAlt: "Core Tech Windstopper",
     rating: 4.7,
     discount: "20% OFF"
+  },
+  {
+    id: 11,
+    name: "HYBRID TECH SLEEVELESS",
+    category: "TRAINING",
+    price: "$60.00",
+    image: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=2070&auto=format&fit=crop",
+    hoverImage: "https://images.unsplash.com/photo-1517838577597-4712306aa13a?q=80&w=2070&auto=format&fit=crop",
+    imageAlt: "Hybrid Tech Sleeveless",
+    rating: 4.8,
+    isNew: true
   }
 ];
 
@@ -97,6 +108,15 @@ const fallbackBestSellers = [
     image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2070&auto=format&fit=crop",
     imageAlt: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop",
     rating: 4.7
+  },
+  {
+    id: 12,
+    name: "AERO-DRY RUNNING SOCKS",
+    category: "RUNNING",
+    price: "$25.00",
+    image: "https://images.unsplash.com/photo-1582966772680-860e372bb558?q=80&w=2070&auto=format&fit=crop",
+    imageAlt: "Aero-Dry Running Socks",
+    rating: 4.9
   }
 ];
 
@@ -192,9 +212,9 @@ export default function Home() {
     return (
       <>
         <HeroSlider />
+        <CategoryGrid />
         <TrustBar />
         <ShopBySport />
-        <CategoryGrid />
         <GridSkeleton
           title="Trending Now"
           subtitle="Experience the latest in high-performance innovation and athletic style."
@@ -235,24 +255,24 @@ export default function Home() {
     <>
       <HeroSlider />
       <TrustBar />
-      <ShopBySport />
-      <FabricShowcase />
       <CategoryGrid />
+      {/* <ShopBySport /> */}
+      <FabricShowcase />
       <ProductGrid
         title="Trending Now"
         subtitle="Experience the latest in high-performance innovation and athletic style."
         products={trendingProductsToShow}
         showRating={false}
       />
-      <CountdownDeals />
       <BannerSlider />
       <ProductGrid
         title="Best Sellers"
         subtitle="Our highest-rated, most demanded gear engineered for everyday excellence."
         products={bestSellersToShow}
       />
+      <CountdownDeals />
       <Testimonials />
-      <Newsletter />
+      {/* <Newsletter /> */}
     </>
   );
 }

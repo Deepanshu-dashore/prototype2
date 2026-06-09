@@ -4,191 +4,201 @@ import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
+import Link from 'next/link';
 
 const categories = [
   {
     id: 1,
-    name: 'RUNNING',
-    subtitle: 'Engineered for Speed',
-    image: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=2070&auto=format&fit=crop',
-    link: '/category/running'
+    name: 'ACTIVEWEAR',
+    image: 'https://images.unsplash.com/photo-1581622558663-b2e33377dfb2?q=80&w=1974&auto=format&fit=crop',
+    link: '/products?category=activewear'
   },
-  { 
+  {
     id: 2,
-    name: 'TRAINING',
-    subtitle: 'Built for Performance',
-    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop',
-    link: '/category/training'
+    name: 'SPORTSWEAR',
+    image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1974&auto=format&fit=crop',
+    link: '/products?category=sportswear'
   },
   {
     id: 3,
-    name: 'ESSENTIALS',
-    subtitle: 'Everyday Excellence',
-    image: '/sportCatgory.png',
-    link: '/category/essentials'
+    name: 'TEAM JERSEYS',
+    image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2070&auto=format&fit=crop',
+    link: '/products?category=jerseys'
   },
   {
     id: 4,
-    name: 'PERFORMANCE',
-    subtitle: 'Push Your Limits',
-    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop',
-    link: '/category/performance'
+    name: 'SHORTS',
+    image: 'https://images.unsplash.com/photo-1539185441755-769473a23570?q=80&w=2070&auto=format&fit=crop',
+    link: '/products?category=shorts'
   },
   {
     id: 5,
-    name: 'STREET ATHLETICS',
-    subtitle: 'Culture in Motion',
-    image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=2020&auto=format&fit=crop',
-    link: '/category/street-athletics'
+    name: 'TRACK PANTS',
+    image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=2070&auto=format&fit=crop',
+    link: '/products?category=trackpants'
   },
   {
     id: 6,
-    name: 'NEW DROPS',
-    subtitle: 'The Future of Sport',
-    image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=2012&auto=format&fit=crop',
-    link: '/category/new-drops'
-  },
-  {
-    id: 7,
-    name: 'OVERSIZED',
-    subtitle: 'Comfort Redefined',
-    image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?q=80&w=1974&auto=format&fit=crop',
-    link: '/category/oversized'
-  },
-  {
-    id: 8,
-    name: 'FOOTWEAR',
-    subtitle: 'Step Into Performance',
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop',
-    link: '/category/footwear'
+    name: 'PREMIUM TEES',
+    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=1974&auto=format&fit=crop',
+    link: '/products?category=tees'
   }
 ];
 
 const CategoryGrid = () => {  
   const [activeIndex, setActiveIndex] = useState(0);
-  const sliderRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (!sliderRef.current) return;
-    const container = sliderRef.current;
-    const cardWidth = container.querySelector('.snap-start')?.clientWidth || 300;
-    const gap = 32; // gap-8 is 32px
-    const scrollAmount = direction === 'left' ? -(cardWidth + gap) : (cardWidth + gap);
-    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-  };
+  const [cardsPerView, setCardsPerView] = useState(3);
+  const [containerWidth, setContainerWidth] = useState(0);
+  
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const container = sliderRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const cardWidth = container.querySelector('.snap-start')?.clientWidth || 300;
-      const index = Math.round(container.scrollLeft / cardWidth);
-      setActiveIndex(index);
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setCardsPerView(1);
+      } else if (window.innerWidth < 768) {
+        setCardsPerView(2);
+      } else if (window.innerWidth < 1024) {
+        setCardsPerView(3);
+      } else {
+        setCardsPerView(5);
+      }
+      
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+      }
     };
 
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    
+    // Slight delay to ensure DOM is fully laid out
+    const timeout = setTimeout(handleResize, 100);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(timeout);
+    };
   }, []);
 
+  const gap = 24; // gap-6 spacing (24px)
+  const maxIndex = Math.max(0, categories.length - cardsPerView);
+  
+  // Calculate exact card width based on active container width
+  const cardWidth = containerWidth > 0 
+    ? (containerWidth - (cardsPerView - 1) * gap) / cardsPerView 
+    : 300;
+  
+  const slideAmount = cardWidth + gap;
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (direction === 'left') {
+      setActiveIndex((prev) => Math.max(prev - 1, 0));
+    } else {
+      setActiveIndex((prev) => Math.min(prev + 1, maxIndex));
+    }
+  };
+
   return (
-    <section className=" bg-[var(--color-background)] overflow-hidden max-[1024px]:py-[80px]">
+    <section className="py-24 bg-[var(--color-background)] overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-end mb-8">
-          <div className="headerLeft">
-            <h2 className="heading-brand">
-              FOR YOUR BRAND
-            </h2>
-            <p className="brand-desc">
-              Curated high-performance gear engineered for movement and style.
-            </p>
-          </div>
-          
-          {/* Navigation Arrows */}
-          <div className="flex gap-3">
-            <button 
-              onClick={() => scroll('left')}
-              className="p-3 border border-black hover:bg-black text-black hover:text-white transition-all duration-300 cursor-pointer flex items-center justify-center group"
-              aria-label="Previous categories"
-            >
-              <Icon icon="ph:arrow-left-bold" className="text-xl transition-transform duration-300 group-hover:-translate-x-1" />
-            </button>
-            <button 
-              onClick={() => scroll('right')}
-              className="p-3 border border-black hover:bg-black text-black hover:text-white transition-all duration-300 cursor-pointer flex items-center justify-center group"
-              aria-label="Next categories"
-            >
-              <Icon icon="ph:arrow-right-bold" className="text-xl transition-transform duration-300 group-hover:translate-x-1" />
-            </button>
-          </div>
+        {/* Header Section */}
+        <div className="mb-12 text-center">
+          <h2 className="heading-brand mx-auto">
+            FOR YOUR BRAND
+          </h2>
+          <p className="brand-desc mx-auto mt-3">
+            Curated high-performance gear engineered for movement and style.
+          </p>
         </div>
 
-        <style>{`
-          .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-          }
-          .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-        `}</style>
-        <div ref={sliderRef} className="grid grid-flow-col auto-cols-[100%] md:auto-cols-[calc((100%-32px)/2)] lg:auto-cols-[calc((100%-64px)/3)] gap-8 overflow-x-auto snap-x snap-mandatory hide-scrollbar w-full">
-          {categories.map((cat, index) => (
-            <motion.div 
-              key={cat.id} 
-              className="relative bg-[var(--color-black)] overflow-hidden cursor-pointer aspect-[16/10] flex flex-col group snap-start"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
+        {/* Slider Frame */}
+        <div className="relative w-full overflow-visible group/slider" ref={containerRef}>
+          {/* Left Arrow Button Overlay */}
+          {activeIndex > 0 && (
+            <button 
+              onClick={() => scroll('left')}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 cursor-pointer shadow-xl hover:scale-110 active:scale-95 border-none"
+              aria-label="Previous slide"
             >
-              <div className="relative w-full h-full overflow-hidden">
-                <Image 
-                  src={cat.image} 
-                  alt={cat.name}
-                  fill
-                  className="object-cover transition-transform duration-[800ms] ease-[cubic-bezier(0.2,1,0.3,1)] group-hover:scale-[1.04]"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80 z-[1]" />
-                <div className="absolute bottom-0 left-0 w-full p-10 z-[2] flex flex-col gap-2 max-[768px]:p-[30px]">
-                  <span className="font-body text-[0.875rem] text-[var(--color-primary-light)] font-medium opacity-0 translate-y-[10px] transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0">
-                    {cat.subtitle}
-                  </span>
-                  <h3 className="font-heading text-[1.75rem] font-bold text-[var(--color-white)] tracking-[-0.02em] uppercase m-0">
-                    {cat.name}
-                  </h3>
-                  <div className="flex items-center justify-between mt-4 opacity-80 transition-all duration-300 group-hover:opacity-100">
-                    <span className="font-heading text-[0.875rem] font-bold text-[var(--color-white)] uppercase tracking-[0.05em] flex items-center gap-2">
-                      Explore 
-                      <Icon icon="ph:arrow-right-bold" className="transition-transform duration-300 group-hover:translate-x-[5px]" />
-                    </span>
+              <Icon icon="ph:arrow-left-bold" className="text-lg" />
+            </button>
+          )}
+
+          {/* Right Arrow Button Overlay */}
+          {activeIndex < maxIndex && (
+            <button 
+              onClick={() => scroll('right')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 cursor-pointer shadow-xl hover:scale-110 active:scale-95 border-none"
+              aria-label="Next slide"
+            >
+              <Icon icon="ph:arrow-right-bold" className="text-lg" />
+            </button>
+          )}
+
+          {/* Slider Outer Window */}
+          <div className="w-full overflow-hidden">
+            <motion.div 
+              className="flex gap-6"
+              animate={{ x: -activeIndex * slideAmount }}
+              transition={{ type: "spring", stiffness: 260, damping: 28 }}
+            >
+              {categories.map((cat, index) => (
+                <Link
+                  key={cat.id}
+                  href={cat.link}
+                  style={{ width: `${cardWidth}px`, flexShrink: 0 }}
+                  className="relative bg-[var(--color-black)] overflow-hidden cursor-pointer aspect-[3/4] flex flex-col group rounded-[12px] md:rounded-[16px] shadow-lg"
+                >
+                  <div className="relative w-full h-full overflow-hidden">
+                    <Image 
+                      src={cat.image} 
+                      alt={cat.name}
+                      fill
+                      className="object-cover transition-transform duration-[800ms] ease-[cubic-bezier(0.2,1,0.3,1)] group-hover:scale-[1.05]"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      priority={index < 3}
+                    />
+                    
+                    {/* Subtle initial linear for baseline readability */}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent z-[1] transition-opacity duration-500 group-hover:opacity-0" />
+                    
+                    {/* Stronger hover linear that fades in to make the white pill button pop */}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/95 via-black/40 to-transparent z-[1] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    
+                    {/* Overlay Text Content */}
+                    <div className="absolute bottom-0 left-0 w-full p-5 py-3 z-[2] flex flex-col items-start gap-1">
+                      {/* Title (shifts up slightly on hover) */}
+                      <h3 className="font-heading text-[1.3rem] md:text-[1.4rem] font-extrabold text-white tracking-tight uppercase leading-none m-0 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-2">
+                        {cat.name}
+                      </h3>
+                      {/* Shop Now link (slides up and fades in on hover, invisible initially) */}
+                      <span className="font-heading text-[0.75rem] font-bold text-white uppercase tracking-wider opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center gap-1.5">
+                        SHOP NOW →
+                      </span>
+                    </div>
                   </div>
-                  <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-[var(--color-primary-bright)] transition-[width] duration-500 ease-[cubic-bezier(0.2,1,0.3,1)] group-hover:w-full" />
-                </div>
-              </div>
+                </Link>
+              ))}
             </motion.div>
-          ))}
+          </div>
         </div>
 
         {/* Slider Indicators (Dots) */}
-        <div className="flex justify-center gap-2 mt-8">
-          {categories.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                if (!sliderRef.current) return;
-                const container = sliderRef.current;
-                const cardWidth = container.querySelector('.snap-start')?.clientWidth || 300;
-                container.scrollTo({ left: idx * cardWidth, behavior: 'smooth' });
-              }}
-              className={`w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                idx === activeIndex ? 'bg-[#ec7700] w-4' : 'bg-gray-300'
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
+        {maxIndex > 0 && (
+          <div className="flex justify-center gap-2 mt-10">
+            {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveIndex(idx)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 cursor-pointer border-none ${
+                  idx === activeIndex ? 'bg-[#ec7700] w-5' : 'bg-gray-300 hover:bg-gray-400'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
