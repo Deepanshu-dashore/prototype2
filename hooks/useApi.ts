@@ -119,7 +119,7 @@ interface MutationVariables {
 
 interface UseMutationApiProps<
   TData = unknown,
-  TError = unknown,
+  TError = AxiosError,
   TVariables = MutationVariables,
   TContext = unknown,
 > {
@@ -182,7 +182,10 @@ export const useMutationApi = <
         }
         return response.data;
       } catch (error) {
-        console.error(`Mutation Error for ${baseQueryKey.join("-")}:`, error);
+        console.log(
+          `Mutation Error for ------>>${baseQueryKey.join("-")}:`,
+          error,
+        );
         throw error;
       }
     },

@@ -285,17 +285,12 @@ export default function RegisterPage() {
             </button>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-gray-50 text-center">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">
-              Already a member?
-            </p>
-            <Link
-              href="/login"
-              className="inline-block w-full py-4 border border-black text-black text-[10px] font-bold uppercase tracking-[0.15em] hover:bg-black hover:text-white transition-all duration-300"
-            >
-              Sign In
+          <p className="mt-7 text-center text-xs font-semibold text-gray-600">
+            ALREADY A MEMBER?{" "}
+            <Link href="/login" className="text-black font-bold underline decoration-1 underline-offset-4 hover:opacity-70 transition-opacity ml-1">
+              SIGN IN
             </Link>
-          </div>
+          </p>
         </div>
       </div>
     </main>

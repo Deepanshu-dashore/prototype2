@@ -5,50 +5,24 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import AuthInput from "../../components/auth/AuthInput";
-import { useMutationApi } from "@/hooks/useApi";
+import axios from "axios";
 import API_ENDPOINTS from "../constants/apiConfig";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/app/store/userSlice";
 
 export default function LoginPage() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [isPending, setIsPending] = useState(false);
 
-  const { mutateAsync: loginUser, isPending } = useMutationApi({
-    key: "login",
-    url: API_ENDPOINTS.USER.LOGIN,
-    method: "POST",
-    requireAuth: false,
-    options: {
-      onSuccess: (data: any) => {
-        console.log("Login successful", data);
-
-        // Store token if returned
-        if (data?.token || data?.accessToken) {
-          const token = data.token || data.accessToken;
-          document.cookie = `_AT=${encodeURIComponent(token)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-        }
-
-        toast.success("Signed in successfully!");
-        router.push("/");
-      },
-      onError: (err: any) => {
-        console.error("Login error", err);
-        const message =
-          err?.response?.data?.message ||
-          err?.response?.data?.error ||
-          err?.message ||
-          "Login failed. Please try again.";
-        toast.error(message);
-      },
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
@@ -56,7 +30,40 @@ export default function LoginPage() {
       return;
     }
 
-    loginUser({ payload: formData });
+    setIsPending(true);
+    try {
+      const BaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2500";
+      const res = await axios.post(`${BaseUrl}${API_ENDPOINTS.USER.LOGIN}`, formData);
+      console.log("Login successful", res.data);
+      const data = res.data?.data || res.data;
+
+      // Store token if returned
+      if (data?.token || data?.accessToken) {
+        const token = data.token || data.accessToken;
+        document.cookie = `_AT=${encodeURIComponent(token)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+      }
+
+      // Update Redux user slice with user data
+      if (data?.user) {
+        dispatch(setUser(data.user));
+      }
+
+      toast.success("Signed in successfully!");
+      router.push("/");
+    } catch (err: any) {
+      console.error("Login error object: ", err);
+      console.log("Error Response Data: ", err?.response?.data);
+      console.log("Error Status Code: ", err?.response?.status);
+
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Login failed. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (

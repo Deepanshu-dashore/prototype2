@@ -166,6 +166,10 @@ html {
   scroll-behavior: smooth;
 }
 
+html, body {
+  position: relative;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   @theme {
