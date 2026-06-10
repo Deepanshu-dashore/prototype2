@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Lexend, Roboto, Public_Sans, Comforter_Brush } from "next/font/google";
+import { Space_Grotesk, Lexend, Public_Sans } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 
@@ -13,21 +13,9 @@ const lexend = Lexend({
   subsets: ["latin"],
 });
 
-const roboto = Roboto({
-  variable: "--font-roboto",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-});
-
 const publicSans = Public_Sans({
   variable: "--font-public-sans",
   subsets: ["latin"],
-});
-
-const comforterBrush = Comforter_Brush({
-  variable: "--font-comforter-brush",
-  subsets: ["latin"],
-  weight: ["400"],
 });
 
 export const metadata: Metadata = {
@@ -47,7 +35,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${lexend.variable} ${roboto.variable} ${publicSans.variable} ${comforterBrush.variable} antialiased`}
+      className={`${spaceGrotesk.variable} ${lexend.variable} ${publicSans.variable} antialiased`}
     >
       <body className="min-h-screen flex flex-col bg-white">
         <Providers>
