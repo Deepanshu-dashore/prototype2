@@ -52,8 +52,8 @@ const resolveImageUrl = (imgUrl: string) => {
   if (imgUrl.startsWith("http://") || imgUrl.startsWith("https://") || imgUrl.startsWith("/")) {
     return imgUrl;
   }
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2500";
-  return `${baseUrl}/uploads/${imgUrl}`;
+  // Use Cloudinary base path for relative category images
+  return `https://res.cloudinary.com/dqubhicgn/image/upload/v1779562735/${imgUrl}`;
 };
 
 const CategorySkeleton = ({ width }: { width: number }) => (
@@ -199,7 +199,7 @@ const CategoryGrid = () => {
                   >
                     <div className="relative w-full h-full overflow-hidden">
                       <Image 
-                        src={"https://res.cloudinary.com/dqubhicgn/image/upload/v1779562735/"+cat.image} 
+                        src={cat.image} 
                         alt={cat.name}
                         fill
                         className="object-cover transition-transform duration-[800ms] ease-[cubic-bezier(0.2,1,0.3,1)] group-hover:scale-[1.05]"
