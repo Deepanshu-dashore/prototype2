@@ -199,7 +199,7 @@ const CategoryGrid = () => {
                   >
                     <div className="relative w-full h-full overflow-hidden">
                       <Image 
-                        src={cat.image} 
+                        src={"https://res.cloudinary.com/dqubhicgn/image/upload/v1779562735/"+cat.image} 
                         alt={cat.name}
                         fill
                         className="object-cover transition-transform duration-[800ms] ease-[cubic-bezier(0.2,1,0.3,1)] group-hover:scale-[1.05]"
