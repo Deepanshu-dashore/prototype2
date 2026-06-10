@@ -9,7 +9,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 const lexend = Lexend({
-  variable: "--font-lexend",
+  variable: "--font-lexend", 
   subsets: ["latin"],
 });
 
