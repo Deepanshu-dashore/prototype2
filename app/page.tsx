@@ -257,7 +257,7 @@ export default function Home() {
       <TrustBar />
       <CategoryGrid />
       {/* <ShopBySport /> */}
-      <FabricShowcase />
+      <FabricShowcase /> 
       <ProductGrid
         title="Trending Now"
         subtitle="Experience the latest in high-performance innovation and athletic style."
