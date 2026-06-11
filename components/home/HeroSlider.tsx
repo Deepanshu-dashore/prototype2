@@ -40,7 +40,7 @@ const slides: HeroSlide[] = [
     headline: "PRECISION\n",
     headlineAccent: "PERFORMANCE",
     body: "Experience the next generation of athletic gear. Designed for speed, built for endurance, and engineered to push your limits.",
-    align: "left",
+    align: "center",
     cta: { label: "Shop Collection", href: "/products" },
     ctaSecondary: { label: "Explore Performance", href: "/categories" },
     watermark: "DISPORT // SYSTEM",
@@ -64,7 +64,7 @@ const slides: HeroSlide[] = [
     headline: "TRAIN\n",
     headlineAccent: "HARDER",
     body: "Maximum compression, zero compromise. Our Armor Series redefines what performance gymwear can achieve at every rep.",
-    align: "right",
+    align: "center",
     cta: { label: "Shop Training", href: "/products?category=training" },
     ctaSecondary: { label: "View Lookbook", href: "/lookbook" },
     watermark: "ARMOR // SERIES",
@@ -311,30 +311,7 @@ const HeroSlider = () => {
 
 
 
-      {/* ── Slide Navigation (Bottom Right) ─────────────────────────────────── */}
-      <div className="absolute bottom-12 right-12 z-20 flex items-center gap-6">
-        {/* Sliding Navigation Arrows */}
-        <div className="flex gap-2">
-          <button
-            onClick={prev}
-            className="w-12 h-12 flex items-center justify-center border border-white/20 text-white hover:bg-white hover:text-black transition-all duration-300 cursor-pointer"
-            aria-label="Previous Slide"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
-          <button
-            onClick={next}
-            className="w-12 h-12 flex items-center justify-center border border-white/20 text-white hover:bg-white hover:text-black transition-all duration-300 cursor-pointer"
-            aria-label="Next Slide"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </button>
-        </div>
-      </div>
+      {/* Slide Navigation hidden by user request */}
 
 
 
