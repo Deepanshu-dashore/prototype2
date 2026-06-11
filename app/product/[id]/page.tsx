@@ -29,6 +29,7 @@ import LoginPopUpModel from '@/components/shared/LoginPopUpModel';
 import ReviewModal from '@/components/shared/ReviewModal';
 import { useGetApi, useMutationApi } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
 import API_ENDPOINTS from '@/app/constants/apiConfig';
 import toast from 'react-hot-toast';
 import DisportLoader from '@/components/shared/DisportLoader';
@@ -236,6 +237,7 @@ function ProductDetailContent() {
         : undefined;
 
   const { isAuthenticated, isClient } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch: refetchProduct } = useGetApi<{ data: GetProduct }>({
     key: ["product", productId],
@@ -275,6 +277,7 @@ function ProductDetailContent() {
     options: {
       onSuccess: () => {
         toast.success("Product added to wishlist!");
+        queryClient.invalidateQueries({ queryKey: ["wishlistCount"] });
       },
       onError: (err: any) => {
         console.error("Error adding to wishlist:", err);
@@ -291,6 +294,7 @@ function ProductDetailContent() {
     options: {
       onSuccess: () => {
         toast.success("Product removed from wishlist!");
+        queryClient.invalidateQueries({ queryKey: ["wishlistCount"] });
       },
       onError: (err: any) => {
         console.error("Error removing from wishlist:", err);

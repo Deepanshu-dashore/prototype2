@@ -3,17 +3,18 @@
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Heart, Trash2, Star, ArrowRight, User } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Heart, Star, ArrowRight, User, ShoppingBag } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useGetApi, useMutationApi } from "@/hooks/useApi";
 import API_ENDPOINTS from "@/app/constants/apiConfig";
 import { useAuth } from "@/hooks/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface WishlistVariant {
   color: string;
-  sizes: Array<{ id?: string; size: string; price?: number; discountPrice?: number } | string>;
+  sizes: Array<{ id?: string; size: string; price?: number; discountPrice?: number; stock?: number } | string>;
 }
 
 interface WishlistItem {
@@ -30,6 +31,7 @@ interface WishlistItem {
   images?: string[];
   productImage?: string[];
   variants?: WishlistVariant[];
+  category?: string | { name: string };
   product?: {
     _id: string;
     productName?: string;
@@ -43,14 +45,23 @@ interface WishlistItem {
     images?: string[];
     productImage?: string[];
     variants?: WishlistVariant[];
+    category?: string | { name: string };
   };
+}
+
+function getCategoryLabel(category?: string | { name: string }): string {
+  if (!category) return "";
+  if (typeof category === "string") return category;
+  return category.name ?? "";
 }
 
 export default function WishlistPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { isAuthenticated: isLogin, isLoading: authLoading } = useAuth();
   const [selectedVariants, setSelectedVariants] = useState<Record<string, any>>({});
   const [movingToCartItems, setMovingToCartItems] = useState<Set<string>>(new Set());
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   // Fetch Wishlist Data
   const { data: wishlistData, isLoading: wishlistLoading, refetch: refetchWishlist } = useGetApi<any>({
@@ -63,7 +74,7 @@ export default function WishlistPage() {
   }) as any;
 
   // Remove from wishlist mutation
-  const { mutate: removeFromWishlist } = useMutationApi({
+  const { mutate: removeFromWishlist, mutateAsync: removeFromWishlistAsync } = useMutationApi({
     key: "wishlist",
     url: API_ENDPOINTS.WISHLIST.REMOVE_FROM_WISHLIST,
     method: "PATCH",
@@ -72,6 +83,7 @@ export default function WishlistPage() {
       onSuccess: () => {
         refetchWishlist();
         toast.success("Item removed from wishlist");
+        queryClient.invalidateQueries({ queryKey: ["wishlistCount"] });
       },
       onError: (error: any) => {
         console.error("Error removing from wishlist:", error);
@@ -81,7 +93,7 @@ export default function WishlistPage() {
   });
 
   // Add to cart mutation
-  const { mutate: addToCartMutation } = useMutationApi({
+  const { mutateAsync: addToCartMutationAsync } = useMutationApi({
     key: "cart",
     url: API_ENDPOINTS.CART.ADD,
     method: "POST",
@@ -89,6 +101,7 @@ export default function WishlistPage() {
     options: {
       onSuccess: () => {
         toast.success("Added to Bag successfully");
+        queryClient.invalidateQueries({ queryKey: ["cartCount"] });
       },
       onError: (error: any) => {
         console.error("Error adding to cart:", error);
@@ -111,15 +124,17 @@ export default function WishlistPage() {
     return wishlistData?.data?.products || wishlistData?.data || [];
   }, [wishlistData]);
 
-  const handleRemoveFromWishlist = (productId: string) => {
+  const handleRemoveFromWishlist = (e: React.MouseEvent, productId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
     removeFromWishlist({ 
-      payload: { 
-        productId: productId 
-      } 
+      payload: { productId } 
     });
   };
 
-  const handleVariantSelection = (productId: string, color: string, size: any) => {
+  const handleVariantSelection = (e: React.MouseEvent, productId: string, color: string, size: any) => {
+    e.preventDefault();
+    e.stopPropagation();
     setSelectedVariants(prev => ({
       ...prev,
       [productId]: {
@@ -139,10 +154,12 @@ export default function WishlistPage() {
       (item.productId === productId || item.product?._id === productId) && 
       (item.selectedVariant?.id === variantId || item.selectedVariant?.variantId === variantId)
     );
-    return !cartItem; // Return true if not found in cart (available)
+    return !cartItem;
   };
 
-  const handleMoveToCart = async (productObj: WishlistItem) => {
+  const handleMoveToCart = async (e: React.MouseEvent, productObj: WishlistItem) => {
+    e.preventDefault();
+    e.stopPropagation();
     const productId = productObj._id || productObj.product?._id;
     if (!productId) return;
 
@@ -150,31 +167,25 @@ export default function WishlistPage() {
       const selectedVariant = selectedVariants[productId];
       
       if (!selectedVariant || !selectedVariant.size) {
-        toast.error("Please select a size");
+        toast.error("Please select a size first");
         return;
       }
 
-      // Check if size is already in cart
       if (selectedVariant.variantId && !isSizeAvailableInCart(productId, selectedVariant.variantId)) {
-        toast.error("This size is already in your cart");
+        toast.error("This size is already in your bag");
         return;
       }
 
-      // Set loading state for this specific card
       setMovingToCartItems(prev => {
         const next = new Set(prev);
         next.add(productId);
         return next;
       });
 
-      // First remove from wishlist
-      await removeFromWishlist({ 
-        payload: { 
-          productId: productId 
-        } 
+      await removeFromWishlistAsync({ 
+        payload: { productId } 
       });
 
-      // Then add to cart with selected variant
       const variantData = {
         id: selectedVariant.variantId || null,
         price: selectedVariant.price || productObj.productDiscountPrice || productObj.price || productObj.product?.productDiscountPrice || productObj.product?.price || 0,
@@ -183,7 +194,7 @@ export default function WishlistPage() {
         size: selectedVariant.size,
       };
 
-      addToCartMutation({
+      await addToCartMutationAsync({
         payload: {
           productId,
           quantity: 1,
@@ -194,7 +205,6 @@ export default function WishlistPage() {
     } catch (error) {
       console.error("Error moving to cart:", error);
     } finally {
-      // Reset loading state for this specific card
       setMovingToCartItems(prev => {
         const next = new Set(prev);
         next.delete(productId);
@@ -203,7 +213,7 @@ export default function WishlistPage() {
     }
   };
 
-  // Auth Guard Rendering
+  // Auth Guard
   if (authLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -214,34 +224,29 @@ export default function WishlistPage() {
 
   if (!isLogin) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center py-20 px-6 max-w-md mx-auto">
-          {/* Login Icon */}
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <User className="w-10 h-10 text-gray-400" />
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 rounded-full bg-surface-soft flex items-center justify-center mx-auto mb-8">
+            <User className="w-8 h-8 text-gray-300" />
           </div>
-          
-          {/* Main Message */}
-          <h2 className="text-2xl font-bold text-black mb-4">Please Sign In to View Your Wishlist</h2>
-          
-          {/* Description */}
-          <p className="text-gray-600 mb-8">
-            Sign in to access your saved items and performance gear collections.
+          <h2 className="text-xl font-medium text-text-primary mb-2 font-heading">
+            Save Your Favourites
+          </h2>
+          <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+            Want to save the items that you love? Just click on the heart to add it to your wishlist.
           </p>
-          
-          {/* Action Buttons */}
-          <div className="flex flex-row sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button 
               onClick={() => router.push("/login")}
-              className="bg-black text-white px-8 py-3 text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer"
+              className="bg-black text-white px-10 py-3.5 text-xs font-medium uppercase tracking-wider hover:bg-gray-800 transition-colors cursor-pointer"
             >
               Sign In
             </button>
             <button 
-              onClick={() => router.push("/")}
-              className="border border-gray-300 text-gray-700 px-8 py-3 text-sm font-medium hover:border-black hover:text-black transition-colors cursor-pointer"
+              onClick={() => router.push("/register")}
+              className="border border-black text-black px-10 py-3.5 text-xs font-medium uppercase tracking-wider hover:bg-black hover:text-white transition-colors cursor-pointer"
             >
-              Continue Shopping
+              Register
             </button>
           </div>
         </div>
@@ -250,93 +255,173 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white font-sans text-black antialiased">
-      <main className="max-w-7xl mx-auto px-6 py-20">
-        {/* Header Section */}
-        <header className="mb-16">
-          <div className="flex items-center gap-3 mb-4">
-            <Heart className="w-6 h-6 text-primary-bright fill-current" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Your Selection</span>
-          </div>
-          <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">
-            My Wishlist <span className="text-gray-200">({wishlistLoading ? "..." : items.length})</span>
+    <div className="min-h-screen bg-white text-text-primary antialiased">
+      <main className="max-w-[1440px] mx-auto px-6 lg:px-12 pt-32 pb-24">
+        
+        {/* Page Header — Nike style: clean, left-aligned, title + count */}
+        <div className="mb-10">
+          <h1 className="text-2xl font-medium text-black font-heading">
+            Favourites {!wishlistLoading && <span className="text-gray-400 font-normal">({items.length})</span>}
           </h1>
-        </header>
+        </div>
 
         {wishlistLoading ? (
-          <div className="py-40 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black mx-auto" />
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-4">Loading your wishlist...</p>
+          <div className="py-40 flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black mb-4" />
+            <p className="text-xs text-gray-400 uppercase tracking-widest">Loading...</p>
           </div>
         ) : items.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {items.map((item: WishlistItem) => {
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+            {items.map((item: WishlistItem, index: number) => {
               const productId = item._id || item.product?._id || "";
-              const productName = item.productName || item.product?.productName || item.name || item.product?.name || "Premium Sportswear Gear";
+              const productName = item.productName || item.product?.productName || item.name || item.product?.name || "Product";
               const rawDiscountPrice = item.productDiscountPrice || item.price || item.product?.productDiscountPrice || item.product?.price || 0;
               const rawActualPrice = item.productPrice || item.productActualPrice || item.product?.productActualPrice || item.product?.price || 0;
               const imageSrc = item.image || item.product?.image || item.product?.images?.[0] || item.product?.productImage?.[0] || "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop";
-              const averageRating = item.averageRating || item.product?.averageRating || 4.5;
+              const averageRating = item.averageRating || item.product?.averageRating || 0;
               const totalReviews = item.totalReviews || item.product?.totalReviews || 0;
               const variants = item.variants || item.product?.variants || [];
+              const categoryLabel = getCategoryLabel(item.category || item.product?.category);
+              const isHovered = hoveredCard === productId;
+              const isMoving = movingToCartItems.has(productId);
+              const hasDiscount = rawActualPrice > rawDiscountPrice;
+              const discountPercent = hasDiscount ? Math.round(((rawActualPrice - rawDiscountPrice) / rawActualPrice) * 100) : 0;
 
               return (
                 <motion.div
                   key={productId}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="group relative bg-[#F9F9F9] border border-gray-100 p-4 transition-all hover:bg-white hover:shadow-2xl hover:shadow-black/5 flex flex-col justify-between"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: index * 0.05 }}
                 >
-                  <div>
-                    {/* Product Image */}
-                    <div className="relative aspect-[4/5] overflow-hidden bg-gray-100 mb-6">
+                  <Link
+                    href={`/product/${productId}`}
+                    className="group flex flex-col cursor-pointer"
+                    onMouseEnter={() => setHoveredCard(productId)}
+                    onMouseLeave={() => setHoveredCard(null)}
+                  >
+                    {/* Image Container — matches ProductCard aspect-3/4 */}
+                    <div className="relative aspect-3/4 w-full overflow-hidden bg-surface-soft mb-3">
                       <Image
                         src={imageSrc}
                         alt={productName}
                         fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       />
+
+                      {/* Discount Badge — top-left, Puma style */}
+                      {hasDiscount && (
+                        <div className="absolute top-0 left-0 z-10">
+                          <span className="bg-[#ba1a1a] text-white text-[11px] font-bold px-3 py-1.5 uppercase tracking-wider">
+                            {discountPercent}% Off
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Wishlist Heart — top-right, filled heart to indicate saved, click to remove */}
                       <button 
-                        onClick={() => handleRemoveFromWishlist(productId)}
-                        className="absolute top-4 right-4 w-10 h-10 bg-white flex items-center justify-center rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-black hover:text-white cursor-pointer z-20"
+                        onClick={(e) => handleRemoveFromWishlist(e, productId)}
+                        className="absolute top-3 right-3 z-20 p-2.5 bg-white/80 backdrop-blur-sm text-primary-bright hover:bg-primary-bright hover:text-white transition-all duration-300 cursor-pointer"
+                        title="Remove from Favourites"
                       >
-                        <Trash2 size={18} />
+                        <Heart size={16} className="fill-current" />
                       </button>
+
+                      {/* "Move to Bag" overlay on hover — Nike style */}
+                      <AnimatePresence>
+                        {isHovered && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.25 }}
+                            className="absolute bottom-0 left-0 right-0 z-10"
+                          >
+                            <button
+                              onClick={(e) => handleMoveToCart(e, item)}
+                              disabled={isMoving}
+                              className="w-full bg-black/90 hover:bg-black text-white py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer transition-colors disabled:bg-gray-400"
+                            >
+                              {isMoving ? (
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              ) : (
+                                <>
+                                  <ShoppingBag size={14} />
+                                  <span>Move to Bag</span>
+                                </>
+                              )}
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
 
-                    {/* Info */}
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-start gap-2">
-                        <h3 className="text-sm font-black uppercase tracking-tight leading-tight max-w-[70%]">
-                          {productName}
-                        </h3>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-sm font-black">₹{rawDiscountPrice.toLocaleString()}</p>
-                          {rawActualPrice > rawDiscountPrice && (
-                            <p className="text-[10px] text-gray-400 line-through">₹{rawActualPrice.toLocaleString()}</p>
+                    {/* Product Details — matches ProductCard layout exactly */}
+                    <div className="flex flex-col gap-1 px-0.5">
+                      {/* Category */}
+                      {categoryLabel && (
+                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-normal">
+                          {categoryLabel}
+                        </span>
+                      )}
+
+                      {/* Product Name */}
+                      <h3 className="text-[15px] font-medium text-black tracking-tight leading-snug line-clamp-1">
+                        {productName}
+                      </h3>
+
+                      {/* Color count if variants exist */}
+                      {variants.length > 0 && (
+                        <span className="text-[11px] text-gray-500 font-normal">
+                          {variants.length} {variants.length === 1 ? "Colour" : "Colours"}
+                        </span>
+                      )}
+
+                      {/* Price */}
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[14px] font-medium text-black">
+                          ₹{rawDiscountPrice.toLocaleString()}
+                        </span>
+                        {hasDiscount && (
+                          <span className="text-[12px] text-gray-400 line-through">
+                            ₹{rawActualPrice.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Rating — small, minimal, inline */}
+                      {averageRating > 0 && (
+                        <div className="flex items-center gap-[2px] mt-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              size={10}
+                              className={i < Math.floor(averageRating)
+                                ? "text-yellow-500 fill-yellow-500"
+                                : "text-gray-200 fill-gray-200"
+                              }
+                            />
+                          ))}
+                          {totalReviews > 0 && (
+                            <span className="text-[10px] text-gray-400 ml-1">({totalReviews})</span>
                           )}
                         </div>
-                      </div>
+                      )}
 
-                      {/* Rating */}
-                      <div className="flex items-center gap-1">
-                        <Star className="w-3 h-3 fill-primary-bright text-primary-bright" />
-                        <span className="text-[10px] font-bold">{averageRating}</span>
-                        <span className="text-[10px] text-gray-400 ml-1">({totalReviews})</span>
-                      </div>
-
-                      {/* Technical Variant Selectors */}
+                      {/* Variant selectors — compact, inline within card details */}
                       {variants.length > 0 && (
-                        <div className="pt-4 border-t border-gray-100 space-y-4">
-                          <div className="flex flex-wrap gap-2">
+                        <div className="mt-2.5 space-y-2">
+                          {/* Color pills */}
+                          <div className="flex flex-wrap gap-1.5">
                             {variants.map((v) => (
                               <button
                                 key={v.color}
-                                onClick={() => handleVariantSelection(productId, v.color, v.sizes?.[0])}
-                                className={`text-[9px] font-black uppercase px-3 py-1 border transition-all cursor-pointer ${
+                                onClick={(e) => handleVariantSelection(e, productId, v.color, v.sizes?.[0])}
+                                className={`text-[9px] font-medium uppercase px-2.5 py-1 border transition-all cursor-pointer ${
                                   selectedVariants[productId]?.color === v.color
                                     ? "bg-black text-white border-black"
-                                    : "bg-white text-gray-400 border-gray-200 hover:border-black hover:text-black"
+                                    : "bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black"
                                 }`}
                               >
                                 {v.color}
@@ -344,6 +429,7 @@ export default function WishlistPage() {
                             ))}
                           </div>
 
+                          {/* Size grid — only shows after color selection */}
                           {selectedVariants[productId]?.color && (
                             <div className="flex flex-wrap gap-1">
                               {variants.find(v => v.color === selectedVariants[productId].color)?.sizes?.map((s: any) => {
@@ -351,11 +437,11 @@ export default function WishlistPage() {
                                 return (
                                   <button
                                     key={sizeStr}
-                                    onClick={() => handleVariantSelection(productId, selectedVariants[productId].color, s)}
-                                    className={`w-8 h-8 flex items-center justify-center text-[10px] font-bold border transition-all cursor-pointer ${
+                                    onClick={(e) => handleVariantSelection(e, productId, selectedVariants[productId].color, s)}
+                                    className={`w-8 h-8 flex items-center justify-center text-[10px] font-medium border transition-all cursor-pointer ${
                                       selectedVariants[productId]?.size === sizeStr
                                         ? "bg-black text-white border-black"
-                                        : "bg-white text-gray-400 border-gray-200 hover:border-black hover:text-black"
+                                        : "bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black"
                                     }`}
                                   >
                                     {sizeStr}
@@ -367,34 +453,29 @@ export default function WishlistPage() {
                         </div>
                       )}
                     </div>
-                  </div>
-
-                  {/* Move to Cart overlay */}
-                  <button 
-                    onClick={() => handleMoveToCart(item)}
-                    disabled={movingToCartItems.has(productId)}
-                    className="w-full text-[10px] font-black uppercase tracking-[0.2em] text-white bg-black py-4 hover:bg-gray-900 transition-all cursor-pointer flex items-center justify-center gap-2 mt-6 disabled:bg-gray-400"
-                  >
-                    {movingToCartItems.has(productId) ? "Moving..." : <>Move to Cart <ArrowRight size={14} /></>}
-                  </button>
+                  </Link>
                 </motion.div>
               );
             })}
           </div>
         ) : (
-          <div className="py-40 text-center">
-            <div className="inline-flex w-24 h-24 bg-gray-50 items-center justify-center rounded-full mb-8">
-              <Heart size={40} className="text-gray-200" />
+          /* Empty State — Nike style: clean, centered, minimal */
+          <div className="py-32 flex flex-col items-center justify-center text-center max-w-md mx-auto">
+            <div className="w-24 h-24 rounded-full bg-gray-50 flex items-center justify-center mb-8">
+              <Heart size={36} className="text-gray-200" />
             </div>
-            <h2 className="text-2xl font-black uppercase tracking-tight mb-4">Your Wishlist is Empty</h2>
-            <p className="text-gray-500 mb-12 max-w-sm mx-auto text-sm leading-relaxed">
-              Find gear that fits your performance level. Start exploring our technical collections to add items here.
+            <h2 className="text-xl font-medium text-black mb-3 font-heading">
+              Items Added to Your Favourites Will Be Saved Here
+            </h2>
+            <p className="text-sm text-gray-500 leading-relaxed mb-10">
+              Find something you love? Tap the heart icon on any product to save it to your favourites.
             </p>
             <Link 
-              href="/"
-              className="inline-flex bg-black text-white px-12 py-5 text-xs font-black uppercase tracking-[0.3em] hover:bg-gray-900 transition-all cursor-pointer"
+              href="/shop"
+              className="bg-black text-white px-12 py-4 text-xs font-medium uppercase tracking-wider hover:bg-gray-800 transition-colors cursor-pointer inline-flex items-center gap-2"
             >
-              Explore Collections
+              <span>Shop Now</span>
+              <ArrowRight size={14} />
             </Link>
           </div>
         )}
