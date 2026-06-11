@@ -167,9 +167,9 @@ const Navbar = () => {
   const navLinks = [
     { name: "Men", href: "/products?gender=Men" },
     { name: "Women", href: "/products?gender=Women" },
-    { name: "Performance", href: "/products" },
-    { name: "New Arrivals", href: "/products" },
-    { name: "Sale", href: "/products" },
+    { name: "Kids", href: "/products?gender=Kids" },
+    { name: "Teamwear", href: "/products?category=jerseys" },
+    { name: "Collection", href: "/products" },
   ];
 
   return (
@@ -209,7 +209,7 @@ const Navbar = () => {
             <Link
               key={link.name}
               href={link.href}
-              className="text-[14px] font-bold uppercase tracking-wider transition-all hover:text-[#964900] whitespace-nowrap text-black font-heading"
+              className="text-[14px] font-semibold capitalize tracking-wider transition-all hover:text-[#964900] whitespace-nowrap text-black font-heading"
             >
               {link.name}
             </Link>
@@ -447,7 +447,7 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-2xl font-bold uppercase tracking-tight text-black font-['Space_Grotesk'] border-b border-gray-50 pb-4"
+                  className="text-2xl font-bold capitalize tracking-tight text-black font-heading border-b border-gray-50 pb-4"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.name}

@@ -5,22 +5,46 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import AuthInput from "../../components/auth/AuthInput";
-import axios from "axios";
+import { api } from "@/hooks/useApi";
 import API_ENDPOINTS from "../constants/apiConfig";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/app/store/userSlice";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [isPending, setIsPending] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      router.replace("/");
+    }
+  }, [isAuthenticated, authLoading, router]);
+
+  if (authLoading) {
+    return (
+      <main className="flex-1 flex items-center justify-center min-h-[500px]">
+        <Loader2 className="w-8 h-8 animate-spin text-black" />
+      </main>
+    );
+  }
+
+  if (isAuthenticated) {
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,21 +56,20 @@ export default function LoginPage() {
 
     setIsPending(true);
     try {
-      const BaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2500";
-      const res = await axios.post(`${BaseUrl}${API_ENDPOINTS.USER.LOGIN}`, formData);
+      const res = await api.post(API_ENDPOINTS.USER.LOGIN, formData);
       console.log("Login successful", res.data);
       const data = res.data?.data || res.data;
-
-      // Store token if returned
-      if (data?.token || data?.accessToken) {
-        const token = data.token || data.accessToken;
-        document.cookie = `_AT=${encodeURIComponent(token)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-      }
 
       // Update Redux user slice with user data
       if (data?.user) {
         dispatch(setUser(data.user));
       }
+
+      // Invalidate relevant query caches
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      queryClient.invalidateQueries({ queryKey: ["wishlistCount"] });
+      queryClient.invalidateQueries({ queryKey: ["cartCount"] });
+      queryClient.invalidateQueries({ queryKey: ["getCart"] });
 
       toast.success("Signed in successfully!");
       router.push("/");

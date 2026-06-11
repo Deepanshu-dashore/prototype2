@@ -21,9 +21,9 @@
   --color-success: #0061a2;
   --color-error: #ba1a1a;
 
-  --font-heading: var(--font-space-grotesk), sans-serif;
-  --font-body: var(--font-lexend), sans-serif;
-  --font-public: var(--font-public-sans), sans-serif;
+  --font-heading: var(--font-barlow), sans-serif;
+  --font-body: var(--font-inter), sans-serif;
+  --font-public: var(--font-inter), sans-serif;
 
   --spacing-section: 120px;
   --max-width-site: 1440px;

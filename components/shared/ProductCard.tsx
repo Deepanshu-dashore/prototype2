@@ -145,7 +145,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className = "", show
         </span>
         
         {/* Title */}
-        <h3 className="text-[14px] font-medium text-black tracking-tight leading-tight line-clamp-1 font-public">
+        <h3 className="text-[16px] font-medium text-black tracking-tight leading-tight line-clamp-1 font-public">
           {product.name}
         </h3>
 

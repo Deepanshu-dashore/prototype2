@@ -3,26 +3,26 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Shirt, Users, Trophy, Truck } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 const features = [
   {
-    icon: Shirt,
+    icon: "tabler:shirt",
     title: "CUSTOM DESIGNS",
     desc: "Built your way"
   },
   {
-    icon: Users,
+    icon: "tabler:users",
     title: "TEAM READY",
     desc: "Unite. Perform. Win."
   },
   {
-    icon: Trophy,
+    icon: "tabler:trophy",
     title: "PREMIUM QUALITY",
     desc: "Made to last"
   },
   {
-    icon: Truck,
+    icon: "tabler:truck",
     title: "FAST DELIVERY",
     desc: "On time, every time"
   }
@@ -30,11 +30,11 @@ const features = [
 
 export default function BannerSlider() {
   return (
-    <section className="relative w-full min-h-[580px] md:min-h-[660px] flex items-center overflow-hidden bg-zinc-950 border-y border-white/5 py-12 md:py-20">
+    <section className="relative w-full min-h-[580px] md:min-h-[500px] flex items-center overflow-hidden bg-zinc-950 border-y border-white/5 py-12 md:py-20">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="/banner slider/banner.png"
+          src="/banner slider/CustomJersey.png"
           alt="Build for Teams. Designed to Win."
           fill
           className="object-cover object-center"
@@ -42,8 +42,8 @@ export default function BannerSlider() {
           priority
         />
         {/* Dark overlay for contrast */}
-        <div className="absolute inset-0 bg-black/40 md:bg-black/20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/70 to-transparent max-md:bg-zinc-950/50" />
+        {/* <div className="absolute inset-0 bg-black/40 md:bg-black/20" /> */}
+        {/* <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/70 to-transparent max-md:bg-zinc-950/50" /> */}
       </div>
 
       {/* Content Overlay */}
@@ -66,7 +66,7 @@ export default function BannerSlider() {
               hidden: { opacity: 0, y: -10 },
               visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
             }}
-            className="text-[#ec7700] text-base sm:text-lg md:text-xl font-heading font-black tracking-[0.08em] italic uppercase block"
+            className="text-[#ec7700] text-base sm:text-lg md:text-xl font-heading font-black tracking-[0.08em] uppercase block"
           >
             BUILD FOR TEAMS.
           </motion.span>
@@ -77,7 +77,7 @@ export default function BannerSlider() {
               hidden: { opacity: 0, x: -30 },
               visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } }
             }}
-            className="text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-heading font-black tracking-tight italic uppercase block leading-[0.95] mt-1"
+            className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-heading font-bold tracking-tight uppercase block leading-[0.95] mt-1"
           >
             DESIGNED TO WIN.
           </motion.h2>
@@ -112,23 +112,16 @@ export default function BannerSlider() {
               hidden: { opacity: 0, y: 15 },
               visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2 } }
             }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-y-6 md:gap-y-0 w-full max-w-2xl mb-8 sm:mb-10 py-5 border-t border-b border-white/10"
+            className="grid grid-cols-2 md:grid-cols-4 gap-y-6 md:gap-y-0 w-full max-w-2xl mb-8 sm:mb-10 py-1"
           >
             {features.map((item, idx) => {
-              const IconComponent = item.icon;
               return (
                 <div 
                   key={idx} 
-                  className={`flex flex-col items-start pr-4 md:pr-6 md:pl-6 first:pl-0 last:pr-0 ${
-                    idx === 3 
-                      ? "" 
-                      : idx === 1 
-                      ? "border-r border-white/10 max-md:border-none" 
-                      : "border-r border-white/10"
-                  }`}
+                  className="flex flex-col items-start pr-4 md:pr-2 md:pl-2 first:pl-0 last:pr-0"
                 >
-                  <IconComponent className="w-7 h-7 text-[#ec7700] mb-3 stroke-[1.25]" />
-                  <span className="text-white text-[11px] sm:text-xs font-heading font-extrabold tracking-wider uppercase mb-0.5">{item.title}</span>
+                  <Icon icon={item.icon} className="w-7 h-7 text-[#ec7700] mb-1.5" />
+                  <span className="text-white text-[11px] sm:text-xs font-heading font-extrabold tracking-wider uppercase mb-0">{item.title}</span>
                   <span className="text-white/50 text-[10px] sm:text-[11px] font-body">{item.desc}</span>
                 </div>
               );

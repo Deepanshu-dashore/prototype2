@@ -1,21 +1,18 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Lexend, Public_Sans } from "next/font/google";
+import { Barlow, Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const barlow = Barlow({
+  variable: "--font-barlow",
   subsets: ["latin"],
+  weight: ["600", "700"],
 });
 
-const lexend = Lexend({
-  variable: "--font-lexend", 
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-});
-
-const publicSans = Public_Sans({
-  variable: "--font-public-sans",
-  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -35,13 +32,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${lexend.variable} ${publicSans.variable} antialiased`}
+      className={`${barlow.variable} ${inter.variable} antialiased`}
     >
       <body className="min-h-screen flex flex-col bg-white">
         <Providers>
           <HelpingHeader />
           <Navbar />
-          <div className="flex-grow">
+          <div className="grow">
             {children}
           </div>
           <Footer />

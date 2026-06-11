@@ -137,11 +137,11 @@ const CategoryGrid = () => {
                   {/* Overlay Text Content */}
                   <div className="absolute bottom-0 left-0 w-full p-5 py-4 z-[2] flex flex-col items-start gap-1">
                     {/* Title */}
-                    <h3 className="font-heading text-[1.1rem] sm:text-[1.3rem] md:text-[1.4rem] font-extrabold text-white tracking-tight uppercase leading-none m-0">
+                    <h3 className="font-heading text-[1.1rem] sm:text-[1.3rem] md:text-[1.4rem] font-semibold text-white tracking-tight uppercase leading-none m-0">
                       {cat.name}
                     </h3>
                     {/* Shop Now link (always visible) */}
-                    <span className="font-heading text-[0.7rem] sm:text-[0.75rem] font-bold text-[#ec7700] uppercase tracking-wider flex items-center gap-1.5 mt-1 transition-all duration-300">
+                    <span className="font-heading text-[0.7rem] sm:text-[0.75rem] font-semibold text-[#ec7700] uppercase tracking-wider flex items-center gap-1.5 mt-1 transition-all duration-300">
                       SHOP NOW 
                       <svg 
                         xmlns="http://www.w3.org/2000/svg" 

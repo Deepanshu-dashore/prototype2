@@ -8,18 +8,12 @@ import {
   UseMutationOptions,
 } from "@tanstack/react-query";
 import axios, { AxiosRequestConfig, AxiosError } from "axios";
-const getCookie = (name: string) => {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-  if (match) return decodeURIComponent(match[2]);
-  return null;
-};
-
 // Base API URL from env
 const BaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2500";
 
 export const api = axios.create({
   baseURL: BaseUrl,
+  withCredentials: true,
 });
 
 // 🔹 Helper to build headers
@@ -32,18 +26,7 @@ const getHeader = ({
   requireAuth = true,
   multiPart = false,
 }: HeaderOptions = {}) => {
-  const token = getCookie("_AT") || getCookie("authToken") || null;
-
-  if (requireAuth && !token) {
-    // You can handle redirection or global toast here
-    throw new Error("Please log in");
-  }
-
   const headers: Record<string, string> = {};
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
 
   if (!multiPart) {
     headers["Content-Type"] = "application/json";

@@ -7,19 +7,6 @@ import API_ENDPOINTS from "@/app/constants/apiConfig";
 import { RootState } from "@/app/store/store";
 import { setUser, logout as logoutAction, setLoading } from "@/app/store/userSlice";
 
-// ── Cookie helper ────────────────────────────────────────
-const getCookie = (name: string) => {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-  if (match) return decodeURIComponent(match[2]);
-  return null;
-};
-
-const deleteCookie = (name: string) => {
-  if (typeof document === "undefined") return;
-  document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax`;
-};
-
 // ── Types ────────────────────────────────────────────────
 interface User {
   _id?: string;
@@ -33,7 +20,6 @@ interface User {
 export function useAuth() {
   const dispatch = useDispatch();
   const [isClient, setIsClient] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
 
   // Redux Selectors
   const user = useSelector((state: RootState) => state.user.user);
@@ -42,20 +28,17 @@ export function useAuth() {
 
   useEffect(() => {
     setIsClient(true);
-    const t = getCookie("_AT") || getCookie("authToken") || null;
-    setToken(t);
   }, []);
 
-  const hasToken = isClient && !!token;
-
   // Fetch current user if authenticated
-  const { data: userData, isLoading: isQueryLoading } = useGetApi<{ data: User }>({
+  const { data: userData, isSuccess, isError, isLoading: isQueryLoading } = useGetApi<{ data: User }>({
     key: "currentUser",
     url: API_ENDPOINTS.USER.CURRENT_USER,
-    requireAuth: true,
+    requireAuth: false,
     options: {
-      enabled: hasToken,
+      enabled: isClient,
       staleTime: 5 * 60 * 1000, // cache for 5 minutes
+      retry: false, // Do not retry on mount if unauthorized
     },
   });
 
@@ -64,15 +47,13 @@ export function useAuth() {
   // Sync with Redux Store
   useEffect(() => {
     if (isClient) {
-      if (!token) {
-        dispatch(setUser(null));
-      } else if (apiUser) {
+      if (isSuccess && apiUser) {
         dispatch(setUser(apiUser));
-      } else if (!isQueryLoading && !apiUser) {
+      } else if (isError) {
         dispatch(setUser(null));
       }
     }
-  }, [apiUser, token, isClient, isQueryLoading, dispatch]);
+  }, [apiUser, isClient, isSuccess, isError, dispatch]);
 
   const getFullName = useCallback(() => {
     if (!user) return "Guest";
@@ -87,9 +68,6 @@ export function useAuth() {
   }, [user]);
 
   const logout = useCallback(() => {
-    deleteCookie("_AT");
-    deleteCookie("authToken");
-    setToken(null);
     dispatch(logoutAction());
     // Force re-render
     window.location.reload();
