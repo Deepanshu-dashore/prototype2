@@ -1,6 +1,6 @@
 "use client";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:2500';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2500";
 
 export const API_ENDPOINTS = {
   // User endpoints
@@ -34,10 +34,16 @@ export const API_ENDPOINTS = {
   REVIEW: {
     CREATE: (productId: string | number) => `/review/${productId}`,
     UPDATE: (productId: string | number) => `/update-review/${productId}`,
-    APPROVE: (productId: string | number, reviewId: string | number) => `/approve-review/${productId}/${reviewId}`,
+    APPROVE: (productId: string | number, reviewId: string | number) =>
+      `/approve-review/${productId}/${reviewId}`,
     GET_BY_PRODUCT: (productId: string | number) => `/get-reviews/${productId}`,
-    REMOVE_MEDIA: (productId: string | number, reviewId: string | number, mediaIndex: number) => `/remove-media/${productId}/${reviewId}/${mediaIndex}`,
-    DELETE: (productId: string | number, reviewId: string | number) => `/delete-review/${productId}/${reviewId}`,
+    REMOVE_MEDIA: (
+      productId: string | number,
+      reviewId: string | number,
+      mediaIndex: number,
+    ) => `/remove-media/${productId}/${reviewId}/${mediaIndex}`,
+    DELETE: (productId: string | number, reviewId: string | number) =>
+      `/delete-review/${productId}/${reviewId}`,
   },
 
   // Category endpoints
@@ -48,10 +54,10 @@ export const API_ENDPOINTS = {
     DELETE: (id: string | number) => `/category/delete/${id}`,
   },
 
-  // filters 
-  COLOR: `/products/get-colors`,      // -> GET /get-colors
-  SIZE: `/products/get-sizes`,       // -> GET /get-sizes
-  SUPER_Search: `/products/search-filter`,       // -> GET /get-sizes
+  // filters
+  COLOR: `/products/get-colors`, // -> GET /get-colors
+  SIZE: `/products/get-sizes`, // -> GET /get-sizes
+  SUPER_Search: `/products/search-filter`, // -> GET /get-sizes
 
   // Cart endpoints
   CART: {
@@ -59,7 +65,8 @@ export const API_ENDPOINTS = {
     LOCAL_CART: `/carts/local-cart`,
     SYNC_CART: `/carts/sync-cart`,
     GET_CART: `/carts/get-cart`,
-    GET_LOCAL_CART: (tempCartId: string | number) => `/carts/get-localCart/${tempCartId}`,
+    GET_LOCAL_CART: (tempCartId: string | number) =>
+      `/carts/get-localCart/${tempCartId}`,
     UPDATE: `/carts/update-cart/`,
     REMOVE: `/carts/remove/`,
     UPDATE_QUANTITY: `/carts/update-quantity`,

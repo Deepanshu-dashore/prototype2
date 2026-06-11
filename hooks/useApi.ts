@@ -82,8 +82,18 @@ export const useGetApi = <
         config.data = payload;
       }
 
-      const res = await api.get<TQueryFnData>(url, config);
-      return res.data;
+      try {
+        const res = await api.get<TQueryFnData>(url, config);
+        return res.data;
+      } catch (error: any) {
+        const backendMessage = error.response?.data?.message 
+          || (Array.isArray(error.response?.data?.errors) && error.response.data.errors[0]?.message)
+          || (typeof error.response?.data?.errors === 'string' && error.response.data.errors);
+        if (backendMessage) {
+          error.message = backendMessage;
+        }
+        throw error;
+      }
     },
     ...options,
   });
@@ -164,11 +174,17 @@ export const useMutationApi = <
             throw new Error(`Invalid HTTP method: ${method}`);
         }
         return response.data;
-      } catch (error) {
+      } catch (error: any) {
         console.log(
           `Mutation Error for ------>>${baseQueryKey.join("-")}:`,
           error,
         );
+        const backendMessage = error.response?.data?.message 
+          || (Array.isArray(error.response?.data?.errors) && error.response.data.errors[0]?.message)
+          || (typeof error.response?.data?.errors === 'string' && error.response.data.errors);
+        if (backendMessage) {
+          error.message = backendMessage;
+        }
         throw error;
       }
     },

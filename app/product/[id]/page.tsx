@@ -237,7 +237,7 @@ function ProductDetailContent() {
 
   const { isAuthenticated, isClient } = useAuth();
 
-  const { data, isLoading, error } = useGetApi<{ data: GetProduct }>({
+  const { data, isLoading, error, refetch: refetchProduct } = useGetApi<{ data: GetProduct }>({
     key: ["product", productId],
     url: API_ENDPOINTS.PRODUCT.GET_BY_ID(productId ?? ""),
     requireAuth: false,
@@ -346,17 +346,49 @@ function ProductDetailContent() {
     setSelectedImage(0);
   }, [selectedColor]);
 
-  if (!productId) {
-    return <div>Invalid product</div>;
-  }
   if (isLoading) {
     return <DisportLoader />;
   }
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
-  if (!apiProduct) {
-    return <div>No product found</div>;
+
+  if (!productId || error || !apiProduct) {
+    return (
+      <main className="container min-h-[70vh] pt-32 pb-24 flex flex-col items-center justify-center text-center">
+        <div className="max-w-md mx-auto px-4 flex flex-col items-center animate-fade-in">
+          <div className="w-16 h-16 bg-surface-soft border border-border flex items-center justify-center rounded-none mb-8">
+            <Icon icon="solar:danger-triangle-bold" className="w-8 h-8 text-primary-bright" />
+          </div>
+
+          <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-tighter leading-none mb-4 font-heading text-text-primary">
+            Oops! Product Not Found
+          </h1>
+          
+          <p className="text-sm font-lexend text-text-secondary leading-relaxed mb-10 max-w-sm">
+            The performance gear you are looking for might have been retired, sold out, or is temporarily unavailable.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.history.back();
+                }
+              }}
+              className="flex-1 sm:flex-none h-14 border border-black bg-transparent text-black hover:bg-black hover:text-white px-8 font-semibold uppercase text-xs tracking-widest transition-all duration-300 flex items-center justify-center gap-2 rounded-none cursor-pointer"
+            >
+              <ArrowLeft size={16} />
+              <span>Go Back</span>
+            </button>
+            <Link
+              href="/shop"
+              className="flex-1 sm:flex-none h-14 bg-primary-bright text-white hover:bg-primary-bright/90 px-8 font-semibold uppercase text-xs tracking-widest transition-all duration-300 flex items-center justify-center gap-2 rounded-none cursor-pointer"
+            >
+              <ShoppingBag size={16} />
+              <span>Continue Shopping</span>
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
   }
 
   const product = apiProduct;
@@ -441,42 +473,26 @@ function ProductDetailContent() {
     }
   };
 
-  const reviewsData = {
-    averageRating: 4.9,
-    totalReviews: 124,
-    averageComfortRating: 4.8,
-    averageQualityRating: 4.9,
-    averageSizeRating: 4.5,
-    reviews: [
-      {
-        _id: "r1",
-        userId: { firstName: "Arjun", lastName: "Mehta" },
-        rating: 5,
-        comment: "The breathability is on another level. I use it for my marathon training and it stays dry throughout the run. Perfect athletic fit.",
-        media: ["https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop"]
-      },
-      {
-        _id: "r2",
-        userId: { firstName: "Sarah", lastName: "Khan" },
-        rating: 4,
-        comment: "Great quality, but runs slightly small. I suggest ordering one size up if you prefer a relaxed fit.",
-        media: []
-      }
-    ]
-  };
-
   const backendReviews = fetchedReviews?.data || fetchedReviews || [];
-  const reviewsList = Array.isArray(backendReviews) && backendReviews.length > 0
-    ? backendReviews
-    : reviewsData.reviews;
+  const reviewsList = Array.isArray(backendReviews) ? backendReviews : [];
 
-  const totalReviewsCount = Array.isArray(backendReviews) && backendReviews.length > 0
-    ? backendReviews.length
-    : reviewsData.totalReviews;
+  const totalReviewsCount = reviewsList.length;
 
-  const averageRatingVal = Array.isArray(backendReviews) && backendReviews.length > 0
-    ? backendReviews.reduce((acc: number, r: any) => acc + (r.rating || 0), 0) / backendReviews.length
-    : reviewsData.averageRating;
+  const averageRatingVal = totalReviewsCount > 0
+    ? backendReviews.reduce((acc: number, r: any) => acc + (r.rating || 0), 0) / totalReviewsCount
+    : (product.averageRating || product.rating || 0);
+
+  const averageComfortRatingVal = totalReviewsCount > 0
+    ? backendReviews.reduce((acc: number, r: any) => acc + (r.comfortRating || 0), 0) / totalReviewsCount
+    : (product.averageComfortRating || 0);
+
+  const averageQualityRatingVal = totalReviewsCount > 0
+    ? backendReviews.reduce((acc: number, r: any) => acc + (r.qualityRating || 0), 0) / totalReviewsCount
+    : (product.averageQualityRating || 0);
+
+  const averageSizeRatingVal = totalReviewsCount > 0
+    ? backendReviews.reduce((acc: number, r: any) => acc + (r.sizeRating || 0), 0) / totalReviewsCount
+    : (product.averageSizeRating || 0);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({ ...prev, [section as keyof typeof expandedSections]: !prev[section as keyof typeof expandedSections] }));
@@ -1026,63 +1042,67 @@ function ProductDetailContent() {
             <div className="bg-white p-8">
               <div className="space-y-12">
                 {/* Average Rating Dashboard */}
-                <div className="p-8 bg-gray-50/50 border border-gray-100 rounded-sm">
-                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-12">
-                    <div className="flex items-center gap-8">
-                      <div className="text-6xl font-bold tracking-tighter text-gray-900 border-r border-gray-200 pr-8 font-heading">
-                        {averageRatingVal.toFixed(1)}
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star key={star} size={18} className={star <= Math.round(averageRatingVal) ? "fill-primary-bright text-primary-bright" : "text-gray-200"} />
-                          ))}
+                {reviewsList.length > 0 && (
+                  <div className="p-8 bg-gray-50/50 border border-gray-100 rounded-sm">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-12">
+                      <div className="flex items-center gap-8">
+                        <div className="text-6xl font-bold tracking-tighter text-gray-900 border-r border-gray-200 pr-8 font-heading">
+                          {averageRatingVal.toFixed(1)}
                         </div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-                          Based on {totalReviewsCount} Customer Reviews
-                        </p>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star key={star} size={18} className={star <= Math.round(averageRatingVal) ? "fill-primary-bright text-primary-bright" : "text-gray-200"} />
+                            ))}
+                          </div>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
+                            Based on {totalReviewsCount} Customer Reviews
+                          </p>
+                        </div>
                       </div>
+
+                      <button
+                        onClick={() => setOpenReviewModal(true)}
+                        className="bg-black text-white px-8 py-4 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-primary-bright transition-all flex items-center gap-3 group"
+                      >
+                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                        Write Performance Review
+                      </button>
                     </div>
 
-                    <button
-                      onClick={() => setOpenReviewModal(true)}
-                      className="bg-black text-white px-8 py-4 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-primary-bright transition-all flex items-center gap-3 group"
-                    >
-                      <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                      Write Performance Review
-                    </button>
-                  </div>
-
-                  {/* Technical Attribute Sliders */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-12">
-                    {[
-                      { label: "Comfort", value: reviewsData.averageComfortRating, min: "Firm", max: "Plush" },
-                      { label: "Quality", value: reviewsData.averageQualityRating, min: "Standard", max: "Elite" },
-                      { label: "Size", value: reviewsData.averageSizeRating, min: "Small", max: "Large" }
-                    ].map((attr, i) => (
-                      <div key={i} className="space-y-3">
-                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-900">{attr.label}</h4>
-                        <div className="relative w-full h-1 bg-gray-200 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(attr.value / 5) * 100}%` }}
-                            className="absolute inset-0 bg-primary-bright"
-                          />
+                    {/* Technical Attribute Sliders */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-12">
+                      {[
+                        { label: "Comfort", value: averageComfortRatingVal, min: "Firm", max: "Plush" },
+                        { label: "Quality", value: averageQualityRatingVal, min: "Standard", max: "Elite" },
+                        { label: "Size", value: averageSizeRatingVal, min: "Small", max: "Large" }
+                      ].map((attr, i) => (
+                        <div key={i} className="space-y-3">
+                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-900">{attr.label}</h4>
+                          <div className="relative w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${(attr.value / 5) * 100}%` }}
+                              className="absolute inset-0 bg-primary-bright"
+                            />
+                          </div>
+                          <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest text-gray-400">
+                            <span>{attr.min}</span>
+                            <span>{attr.max}</span>
+                          </div>
                         </div>
-                        <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest text-gray-400">
-                          <span>{attr.min}</span>
-                          <span>{attr.max}</span>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Customer Reviews Feed */}
                 <div className="space-y-8">
-                  <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-8 border-b border-gray-100 pb-4">
-                    Latest Assessments
-                  </h2>
+                  {reviewsList.length > 0 && (
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-8 border-b border-gray-100 pb-4">
+                      Latest Assessments
+                    </h2>
+                  )}
 
                   {reviewsLoading ? (
                     <div className="text-center py-20 uppercase tracking-[0.4em] text-gray-400 text-[10px] animate-pulse">Loading Feed...</div>
@@ -1196,7 +1216,10 @@ function ProductDetailContent() {
         open={openReviewModal}
         onClose={() => setOpenReviewModal(false)}
         product={product}
-        onReviewAdded={refetchReviews}
+        onReviewAdded={() => {
+          refetchReviews();
+          refetchProduct();
+        }}
       />
 
       {/* Fullscreen Product Image Lightbox */}

@@ -8,6 +8,15 @@ import toast from 'react-hot-toast';
 import { useMutationApi } from '@/hooks/useApi';
 import API_ENDPOINTS from '@/app/constants/apiConfig';
 
+const resolveImageUrl = (imgUrl: string) => {
+  if (!imgUrl) return '';
+  if (imgUrl.startsWith('http://') || imgUrl.startsWith('https://') || imgUrl.startsWith('/')) {
+    return imgUrl;
+  }
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:2500';
+  return `${baseUrl}/uploads/product/${imgUrl}`;
+};
+
 interface ReviewModalProps {
   open: boolean;
   onClose: () => void;
@@ -46,6 +55,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ open, onClose, product, onRev
     url: API_ENDPOINTS.REVIEW.CREATE(productId),
     method: "POST",
     requireAuth: true,
+    multiPart: true,
     options: {
       onSuccess: (data) => {
         console.log("review added", data);
@@ -82,21 +92,27 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ open, onClose, product, onRev
 
     setIsSubmitting(true);
     try {
+      const formData = new FormData();
+      formData.append("rating", String(rating));
+      formData.append("comment", description.trim());
+      formData.append("sizeRating", String(sizeRating || 5));
+      formData.append("qualityRating", String(qualityRating || 5));
+      formData.append("comfortRating", String(comfortRating || 5));
+      images.forEach((img) => {
+        formData.append("media", img);
+      });
+
       await addReviewMutation.mutateAsync({
-        payload: {
-          rating,
-          comment: description.trim(),
-          sizeRating: sizeRating || 5,
-          qualityRating: qualityRating || 5,
-          comfortRating: comfortRating || 5,
-        },
+        payload: formData,
       });
     } catch (err) {
-      console.error("Failed to submit review:", err);
+      console.log("Failed to submit review:", err);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const isDisabled = isSubmitting || !rating || description.length < 10;
 
   if (!open) return null;
 
@@ -109,54 +125,81 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ open, onClose, product, onRev
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/70 backdrop-blur-xs"
           />
           
           <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.95 }}
+            initial={{ opacity: 0, y: 30, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 100, scale: 0.95 }}
-            className="relative w-full max-w-4xl bg-white rounded-sm shadow-2xl overflow-hidden my-auto"
+            exit={{ opacity: 0, y: 30, scale: 0.98 }}
+            className="relative w-full max-w-4xl bg-white rounded-none shadow-2xl overflow-hidden my-auto border border-gray-100"
           >
             {/* Header / Product Info */}
-            <div className="flex flex-col md:flex-row bg-gray-50 border-b border-gray-100">
-              <div className="relative w-full md:w-64 aspect-square bg-gray-200">
-                <Image 
-                  src={product?.images?.[0] || product?.productImage?.[0] || product?.image || "/disport_sneakers_product_1778407255046.png"} 
-                  alt={product?.name || product?.productName || "Product"} 
-                  fill 
-                  className="object-cover grayscale"
-                />
-              </div>
-              <div className="flex-1 p-8 flex flex-col justify-center">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-bright">Athlete Assessment</span>
-                    <h2 className="text-2xl font-bold uppercase tracking-tighter text-gray-900 mt-1">{product.name}</h2>
-                  </div>
-                  <button 
-                    onClick={onClose}
-                    className="p-2 hover:bg-gray-200 transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
+            <div className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-white border-b border-gray-100 gap-4">
+              <div className="flex items-center gap-4">
+                <div className="relative w-14 h-14 bg-surface-soft border border-gray-100 flex-shrink-0">
+                  <Image 
+                    src={resolveImageUrl(product?.images?.[0] || product?.productImage?.[0] || product?.image || "") || "/disport_sneakers_product_1778407255046.png"} 
+                    alt={product?.productName || product?.name || "Product"} 
+                    fill 
+                    className="object-cover"
+                  />
                 </div>
-                <div className="flex items-center gap-6">
-                  <div className="flex flex-col">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Current Rating</span>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star size={14} className="fill-black text-black" />
-                      <span className="text-sm font-bold">{product.rating}</span>
-                    </div>
-                  </div>
-                  <div className="w-px h-8 bg-gray-200" />
-                  <div className="flex flex-col">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Status</span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-green-600 mt-1 flex items-center gap-1">
-                      <ShieldCheck size={12} /> Verified Purchase
+                <div>
+                  <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-primary-bright font-lexend">Athlete Assessment</span>
+                  <h2 className="text-base font-bold uppercase tracking-tight text-text-primary font-heading mt-0.5 leading-none">{product?.productName || product?.name || "Product"}</h2>
+                  <div className="flex items-center gap-3 mt-1.5 text-[9px] font-bold text-gray-400 font-lexend uppercase">
+                    <span className="flex items-center gap-1">
+                      <Star size={10} className="fill-gray-400 text-gray-400" /> {product?.averageRating || product?.rating || 0}
+                    </span>
+                    <span className="w-1.5 h-1.5 bg-gray-200 rounded-full" />
+                    <span className="text-green-600 flex items-center gap-1">
+                      <ShieldCheck size={10} /> Verified Purchase
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Overall Star Rating Selector in Header */}
+              <div className="flex items-center gap-6 md:ml-auto justify-between md:justify-end">
+                <div className="flex flex-col items-start md:items-end">
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-text-secondary font-lexend">Rate Product</span>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        onClick={() => setRating(star)}
+                        className="transition-colors duration-150 cursor-pointer"
+                      >
+                        <Star 
+                          size={24} 
+                          className={`transition-colors duration-150 ${
+                            (hoverRating || rating) >= star 
+                              ? "fill-primary-bright text-primary-bright" 
+                              : "text-gray-200 hover:text-gray-400"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {rating > 0 && (
+                  <div className="hidden lg:block bg-surface-soft px-3 py-1.5 border border-gray-100 text-[9px] font-bold uppercase tracking-widest text-text-primary font-lexend">
+                    {["", "Poor", "Fair", "Good", "Very Good", "Excellent"][rating]}
+                  </div>
+                )}
+                
+                <div className="w-px h-10 bg-gray-100 hidden md:block" />
+                
+                <button 
+                  onClick={onClose}
+                  className="p-2 hover:bg-surface-soft text-text-primary hover:text-primary-bright transition-colors rounded-none cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
               </div>
             </div>
 
@@ -165,66 +208,45 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ open, onClose, product, onRev
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 
                 {/* Left Side: Ratings */}
-                <div className="space-y-10">
-                  <section className="space-y-4">
-                    <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 border-l-4 border-black pl-3">
-                      Overall Performance
-                    </h3>
-                    <div className="flex items-center gap-3">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          onMouseEnter={() => setHoverRating(star)}
-                          onMouseLeave={() => setHoverRating(0)}
-                          onClick={() => setRating(star)}
-                          className="transition-transform active:scale-90"
-                        >
-                          <Star 
-                            size={32} 
-                            className={`transition-colors ${
-                              (hoverRating || rating) >= star 
-                                ? "fill-primary-bright text-primary-bright" 
-                                : "text-gray-200"
-                            }`}
-                          />
-                        </button>
-                      ))}
-                      {rating > 0 && (
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2">
-                          {["", "Poor", "Fair", "Good", "Very Good", "Excellent"][rating]}
-                        </span>
-                      )}
-                    </div>
-                  </section>
+                <div className="space-y-8">
 
-                  <section className="space-y-8 pt-4">
-                    <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 border-l-4 border-black pl-3">
-                      Technical Attributes
+                  <section className="space-y-6 pt-2">
+                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-text-primary border-l-2 border-black pl-2 font-heading">
+                      Technical Performance
                     </h3>
                     
                     {[
-                      { label: "Size & Fit", state: sizeRating, setter: setSizeRating, min: "Small", max: "Large" },
-                      { label: "Material Quality", state: qualityRating, setter: setQualityRating, min: "Standard", max: "Premium" },
-                      { label: "Comfort Level", state: comfortRating, setter: setComfortRating, min: "Firm", max: "Plush" }
+                      { label: "Size & Fit", state: sizeRating, setter: setSizeRating, min: "Runs Small", max: "Runs Large", mid: "True to Size" },
+                      { label: "Material Quality", state: qualityRating, setter: setQualityRating, min: "Standard", max: "Premium", mid: "Excellent" },
+                      { label: "Comfort Level", state: comfortRating, setter: setComfortRating, min: "Firm / Responsive", max: "Plush / Max Cushion", mid: "Balanced" }
                     ].map((attr, idx) => (
-                      <div key={idx} className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{attr.label}</span>
-                          <span className="text-[10px] font-bold text-black">{attr.state}/5</span>
+                      <div key={idx} className="space-y-3">
+                        <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-text-secondary font-lexend">
+                          <span>{attr.label}</span>
+                          <span className="text-text-primary">{attr.state > 0 ? `${attr.state}/5` : "Not Selected"}</span>
                         </div>
-                        <div className="flex gap-2">
-                          {[1, 2, 3, 4, 5].map((val) => (
-                            <button
-                              key={val}
-                              onClick={() => attr.setter(val)}
-                              className={`flex-1 h-2 transition-all ${
-                                attr.state >= val ? "bg-black" : "bg-gray-100 hover:bg-gray-200"
-                              }`}
-                            />
-                          ))}
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map((val) => {
+                            const isSelected = attr.state === val;
+                            return (
+                              <button
+                                key={val}
+                                type="button"
+                                onClick={() => attr.setter(val)}
+                                className={`flex-1 py-2 text-xs font-bold transition-all border duration-150 cursor-pointer text-center font-lexend
+                                  ${isSelected 
+                                    ? "bg-black text-white border-black" 
+                                    : "bg-surface-soft text-text-secondary border-transparent hover:border-gray-300 hover:bg-gray-100"
+                                  }`}
+                              >
+                                {val}
+                              </button>
+                            );
+                          })}
                         </div>
-                        <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest text-gray-400">
+                        <div className="flex justify-between text-[8px] font-bold uppercase tracking-wider text-gray-400 font-lexend">
                           <span>{attr.min}</span>
+                          <span>{attr.mid}</span>
                           <span>{attr.max}</span>
                         </div>
                       </div>
@@ -233,50 +255,50 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ open, onClose, product, onRev
                 </div>
 
                 {/* Right Side: Text & Images */}
-                <div className="space-y-10">
-                  <section className="space-y-4">
-                    <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 border-l-4 border-black pl-3">
+                <div className="space-y-8">
+                  <section className="space-y-3">
+                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-text-primary border-l-2 border-black pl-2 font-heading">
                       Technical Feedback
                     </h3>
                     <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Share your detailed assessment of the gear's performance, breathability, and durability..."
-                      className="w-full h-40 bg-gray-50 border border-gray-100 p-6 text-sm focus:outline-none focus:border-black transition-all resize-none font-medium placeholder:text-gray-300"
+                      className="w-full h-36 bg-surface-soft border border-transparent p-5 text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-all resize-none font-medium placeholder:text-gray-400 font-lexend rounded-none"
                     />
-                    <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest">
-                      <span className={description.length < 10 ? "text-primary-bright" : "text-green-600"}>
+                    <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest font-lexend text-gray-400">
+                      <span className={description.length < 10 ? "text-error" : "text-green-600"}>
                         {description.length < 10 ? "Min. 10 Characters Required" : "Assessment Length Valid"}
                       </span>
-                      <span className="text-gray-400">{description.length} Characters</span>
+                      <span>{description.length} Characters</span>
                     </div>
                   </section>
 
-                  <section className="space-y-4">
-                    <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 border-l-4 border-black pl-3">
+                  <section className="space-y-3">
+                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-text-primary border-l-2 border-black pl-2 font-heading">
                       Visual Proof
                     </h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-5 gap-2">
                       {images.map((img, idx) => (
-                        <div key={idx} className="relative aspect-square bg-gray-100 border border-gray-200 group overflow-hidden">
+                        <div key={idx} className="relative aspect-square bg-surface-soft border border-gray-100 group overflow-hidden">
                           <Image 
                             src={URL.createObjectURL(img)} 
                             alt="Review" 
                             fill 
-                            className="object-cover grayscale hover:grayscale-0 transition-all"
+                            className="object-cover grayscale hover:grayscale-0 transition-all duration-300"
                           />
                           <button 
                             onClick={() => handleRemoveImage(idx)}
-                            className="absolute top-1 right-1 bg-black text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute inset-0 bg-black/60 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                           >
-                            <Trash2 size={12} />
+                            <Trash2 size={14} />
                           </button>
                         </div>
                       ))}
                       {images.length < 5 && (
-                        <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-200 hover:border-black hover:bg-gray-50 transition-all cursor-pointer group">
-                          <Camera size={20} className="text-gray-300 group-hover:text-black transition-colors" />
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400 mt-2 group-hover:text-black">
+                        <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-200 hover:border-black hover:bg-surface-soft transition-all duration-150 cursor-pointer group">
+                          <Camera size={18} className="text-gray-400 group-hover:text-black transition-colors" />
+                          <span className="text-[7px] font-bold uppercase tracking-wider text-gray-400 mt-1.5 group-hover:text-black font-lexend">
                             {images.length}/5 Photos
                           </span>
                           <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} />
@@ -289,19 +311,23 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ open, onClose, product, onRev
             </div>
 
             {/* Footer / Submit */}
-            <div className="p-8 bg-gray-50 flex items-center justify-between border-t border-gray-100">
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 max-w-sm">
+            <div className="p-6 bg-white flex flex-col sm:flex-row items-center justify-between border-t border-gray-100 gap-4">
+              <p className="text-[8px] font-bold uppercase tracking-wider text-gray-400 max-w-md font-lexend text-center sm:text-left leading-normal">
                 By submitting, you confirm that your assessment is honest and reflects your personal experience with the gear.
               </p>
               <button
                 onClick={handleSubmit}
-                disabled={isSubmitting || !rating || description.length < 10}
-                className="bg-black text-white px-12 py-5 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-primary-bright disabled:bg-gray-200 disabled:text-gray-400 transition-all flex items-center gap-3 shadow-xl hover:shadow-primary-bright/20"
+                disabled={isDisabled}
+                className={`w-full sm:w-auto px-10 py-4 text-[10px] font-bold uppercase tracking-widest transition-all duration-200 rounded-none font-lexend
+                  ${isDisabled
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+                    : "bg-primary-bright text-white hover:bg-black cursor-pointer shadow-lg hover:shadow-black/10"
+                  }`}
               >
                 {isSubmitting ? (
-                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2 inline-block align-middle" />
                 ) : null}
-                {isSubmitting ? "Processing..." : "Submit Performance Review"}
+                <span>{isSubmitting ? "Submitting..." : "Submit Review"}</span>
               </button>
             </div>
           </motion.div>
