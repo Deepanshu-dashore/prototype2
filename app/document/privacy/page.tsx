@@ -1,18 +1,13 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import docData from "../../constants/documents.json";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 
 export default function PrivacyPolicyPage() {
   const data = docData.privacy;
 
   return (
     <div className="bg-white min-h-screen font-sans text-[#111] antialiased">
-      <Navbar />
-      
       <main className="max-w-4xl mx-auto px-6 py-20">
         <header className="mb-16 border-b border-gray-100 pb-12">
           <h1 className="text-4xl font-bold tracking-tight mb-6">
@@ -72,8 +67,6 @@ export default function PrivacyPolicyPage() {
           </section>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

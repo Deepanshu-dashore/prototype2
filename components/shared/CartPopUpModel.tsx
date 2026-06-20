@@ -62,7 +62,7 @@ export default function CartPopUpModel({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.98 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className={`fixed bg-white border border-border shadow-[0_30px_60px_rgba(0,0,0,0.25)] z-[9998] p-6 rounded-none w-[360px] sm:w-[390px] ${positionClasses[position]}`}
+            className={`fixed bg-white border border-border-accent shadow-[0_30px_60px_rgba(0,0,0,0.25)] z-[9998] p-6 rounded-none w-[360px] sm:w-[390px] ${positionClasses[position]}`}
           >
             {/* Close Button */}
             <button
@@ -84,7 +84,7 @@ export default function CartPopUpModel({
 
             {/* Product Metadata Row */}
             <div className="flex gap-4 mb-6">
-              <div className="w-20 h-24 bg-surface-soft relative overflow-hidden flex-shrink-0 shadow-sm border border-border/30">
+              <div className="w-20 h-24 bg-surface-soft relative overflow-hidden flex-shrink-0 shadow-sm border border-border-accent/30">
                 <Image
                   src={imageSrc}
                   alt={product?.productName || product?.name || "Product"}

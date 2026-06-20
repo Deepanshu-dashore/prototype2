@@ -2,7 +2,7 @@
   "terms": {
     "title": "Terms & Conditions",
     "effectiveDate": "11 August 2025",
-    "lastUpdated": "11 August 2025",
+    "lastUpdated": "20 June 2026",
     "sections": [
       {
         "type": "text",
@@ -51,7 +51,7 @@
         "title": "6. Returns & Refunds",
         "type": "list",
         "items": [
-          "Products can be returned within **7 days** of delivery if unused and in original packaging.",
+          "Products can be returned within **30 days** of delivery if unused and in original packaging.",
           "Refunds will be processed as per our Return Policy."
         ]
       },
@@ -82,14 +82,14 @@
     "contact": {
       "address": "123 Sport Street, New Delhi, India",
       "phone": "+91 98765 43210",
-      "email": "support@sportify.com"
+      "email": "support@disport.com"
     },
     "tagline": "⚡ Disport – Fuel Your Game, Own Your Passion! ⚡"
   },
   "privacy": {
     "title": "Privacy Policy",
     "effectiveDate": "11 August 2025",
-    "lastUpdated": "11 August 2025",
+    "lastUpdated": "20 June 2026",
     "sections": [
       {
         "type": "text",
@@ -108,7 +108,7 @@
       {
         "title": "Cancellation and Refund Policy",
         "type": "text",
-        "content": "Orders placed with DISPORT CORPORATION can be canceled within **[X]** hours of purchase. After this period, cancellations may not be possible. Refunds will be processed within **[X]** business days if eligible. Custom-made or personalized products may not be refundable. If you receive a defective or incorrect item, please contact us within **[X]** days of delivery for a resolution."
+        "content": "Orders placed with DISPORT CORPORATION can be canceled within **24** hours of purchase. After this period, cancellations may not be possible. Refunds will be processed within **5-7** business days if eligible. Custom-made or personalized products may not be refundable. If you receive a defective or incorrect item, please contact us within **7** days of delivery for a resolution."
       },
       {
         "title": "Shipping and Delivery Policy",
@@ -122,5 +122,132 @@
       "email": "privacy@disport.com"
     },
     "tagline": "⚡ Disport – Protecting Your Privacy While Powering Your Game! ⚡"
+  },
+  "refund": {
+    "title": "Refund Policy",
+    "effectiveDate": "20 June 2026",
+    "lastUpdated": "20 June 2026",
+    "sections": [
+      {
+        "type": "text",
+        "content": "At **DISPORT**, customer satisfaction is our top priority. We stand behind the quality of our high-performance sportswear and gear. If you are not completely satisfied with your purchase, we are here to help you return or exchange it."
+      },
+      {
+        "title": "1. Return Window",
+        "type": "text",
+        "content": "You can return your unused items in their original packaging with tags intact within **30 days** of delivery. Items returned after this period will not be eligible for a refund."
+      },
+      {
+        "title": "2. Return Process",
+        "type": "list",
+        "items": [
+          "Initiate a return request via your account or contact support at **support@disport.com**.",
+          "Pack the items securely in their original packaging, ensuring all tags are attached.",
+          "Ship the package back using our prepaid return shipping label or your preferred courier."
+        ]
+      },
+      {
+        "title": "3. Refund Timeline",
+        "type": "text",
+        "content": "Once we receive and inspect your returned items, we will notify you of the approval or rejection of your refund. Approved refunds will be processed to your original payment method within **5 to 7 business days**."
+      },
+      {
+        "title": "4. Non-Refundable Items",
+        "type": "list",
+        "items": [
+          "Customized or personalized jerseys and gear.",
+          "Undergarments, compression wear, and socks for hygiene reasons.",
+          "Items marked as **Final Sale** or clearance."
+        ]
+      }
+    ],
+    "contact": {
+      "address": "123 Sport Street, New Delhi, India",
+      "phone": "+91 98765 43210",
+      "email": "support@disport.com"
+    },
+    "tagline": "⚡ Disport – High Performance Gear, Hassle-Free Returns! ⚡"
+  },
+  "refundExchange": {
+    "title": "Refund & Exchange Policy",
+    "effectiveDate": "20 June 2026",
+    "lastUpdated": "20 June 2026",
+    "sections": [
+      {
+        "type": "text",
+        "content": "Need a different size or color? At **DISPORT**, we make exchanges simple. If your gear doesn't fit or look exactly how you wanted, you can easily exchange it or request a full refund within **30 days** of purchase."
+      },
+      {
+        "title": "1. Free Size Exchanges",
+        "type": "text",
+        "content": "To ensure you perform at your best, we offer free size exchanges on all apparel and footwear within **14 days** of delivery, subject to stock availability."
+      },
+      {
+        "title": "2. Exchange Conditions",
+        "type": "list",
+        "items": [
+          "Items must be in brand new, unworn, and unwashed condition.",
+          "Original tags, packaging, and accessories must be attached.",
+          "We reserve the right to decline exchanges on items showing signs of athletic wear or damage."
+        ]
+      },
+      {
+        "title": "3. Step-by-Step Exchange Flow",
+        "type": "list",
+        "items": [
+          "Log into your account, select the order, and choose **Exchange**.",
+          "Select the item, the preferred size/color, and submit the request.",
+          "A prepaid shipping label will be generated for returning the original item.",
+          "Your replacement item will be dispatched immediately once the return is picked up or inspected."
+        ]
+      }
+    ],
+    "contact": {
+      "address": "123 Sport Street, New Delhi, India",
+      "phone": "+91 98765 43210",
+      "email": "support@disport.com"
+    },
+    "tagline": "⚡ Disport – Engineered for the Perfect Fit! ⚡"
+  },
+  "shipping": {
+    "title": "Shipping & Delivery Policy",
+    "effectiveDate": "20 June 2026",
+    "lastUpdated": "20 June 2026",
+    "sections": [
+      {
+        "type": "text",
+        "content": "We deliver premium, high-performance athletic gear worldwide. Our goal is to process and ship your orders as quickly and securely as possible."
+      },
+      {
+        "title": "1. Processing Times",
+        "type": "text",
+        "content": "All orders placed before **2:00 PM IST** are processed and dispatched on the same business day. Orders placed after 2:00 PM or on weekends/holidays will be processed on the next business day."
+      },
+      {
+        "title": "2. Delivery Methods & Costs",
+        "type": "list",
+        "items": [
+          "**Standard Delivery:** 3 to 5 business days. Free for orders above **₹2,000**, otherwise **₹99**.",
+          "**Express Delivery:** 1 to 2 business days. Flat rate of **₹199**.",
+          "**International Shipping:** 7 to 14 business days. Rates calculated at checkout based on destination."
+        ]
+      },
+      {
+        "title": "3. Shipment Tracking",
+        "type": "text",
+        "content": "Once your order is shipped, you will receive a tracking link via email and SMS to monitor its journey in real-time."
+      },
+      {
+        "title": "4. Damage & Loss Protection",
+        "type": "text",
+        "content": "If your package is damaged during transit, or if the tracking shows delivered but you haven't received it, please contact support within **48 hours** for a swift replacement or refund."
+      }
+    ],
+    "contact": {
+      "address": "123 Sport Street, New Delhi, India",
+      "phone": "+91 98765 43210",
+      "email": "support@disport.com"
+    },
+    "tagline": "⚡ Disport – Fast Shipping, Powering Your Ambition! ⚡"
   }
 }

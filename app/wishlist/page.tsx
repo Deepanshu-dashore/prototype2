@@ -198,7 +198,7 @@ export default function WishlistPage() {
         payload: {
           productId,
           quantity: 1,
-          selectedVariant: variantData
+          selectedVariant: selectedVariant.variantId || ""
         }
       });
       

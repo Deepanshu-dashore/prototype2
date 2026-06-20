@@ -90,7 +90,7 @@ export function useCart() {
 
   const addToCart = async (payload: {
     productId: string;
-    selectedVariant: string; // stringified variant object
+    selectedVariant: any; // variant object
     quantity: number;
     image?: string;
     bulkNameAndNumber?: string; // stringified json

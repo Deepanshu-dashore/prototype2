@@ -59,7 +59,7 @@ export default function LoginPopUpModel({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.98 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className={`fixed bg-white border border-border shadow-[0_30px_60px_rgba(0,0,0,0.25)] z-[9999] w-[350px] sm:w-[380px] p-6 rounded-none ${positionClasses[position]}`}
+            className={`fixed bg-white border border-border-accent shadow-[0_30px_60px_rgba(0,0,0,0.25)] z-[9999] w-[350px] sm:w-[380px] p-6 rounded-none ${positionClasses[position]}`}
           >
             {/* Close Button */}
             <button

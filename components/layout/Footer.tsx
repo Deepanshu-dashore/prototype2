@@ -29,12 +29,12 @@ export default function Footer() {
   ];
 
   const policyLinks = [
-    { name: "Privacy Policy", href: "#" },
-    { name: "Refund & Exchange", href: "#" },
-    { name: "Refund Policy", href: "#" },
-    { name: "Shipping Policy", href: "#" },
-    { name: "Terms of Service", href: "#" },
-    { name: "Search", href: "#" },
+    { name: "Privacy Policy", href: "/document/privacy" },
+    { name: "Refund & Exchange", href: "/document/refund-exchange" },
+    { name: "Refund Policy", href: "/document/refund" },
+    { name: "Shipping Policy", href: "/document/shipping" },
+    { name: "Terms of Service", href: "/document/terms" },
+    { name: "Search", href: "/products" },
   ];
 
   const socialLinks = [

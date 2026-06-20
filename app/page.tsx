@@ -212,9 +212,9 @@ export default function Home() {
     return (
       <>
         <HeroSlider />
-        <CategoryGrid />
         <TrustBar />
-        <ShopBySport />
+        <CategoryGrid />
+        <FabricShowcase /> 
         <GridSkeleton
           title="Trending Now"
           subtitle="Experience the latest in high-performance innovation and athletic style."
@@ -224,7 +224,8 @@ export default function Home() {
           title="Best Sellers"
           subtitle="Our highest-rated, most demanded gear engineered for everyday excellence."
         />
-        <Newsletter />
+        <CountdownDeals />
+        <Testimonials />
       </>
     );
   }

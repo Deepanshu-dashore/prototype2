@@ -29,6 +29,7 @@ import LoginPopUpModel from '@/components/shared/LoginPopUpModel';
 import ReviewModal from '@/components/shared/ReviewModal';
 import { useGetApi, useMutationApi } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/hooks/useCart';
 import { useQueryClient } from '@tanstack/react-query';
 import API_ENDPOINTS from '@/app/constants/apiConfig';
 import toast from 'react-hot-toast';
@@ -238,6 +239,7 @@ function ProductDetailContent() {
 
   const { isAuthenticated, isClient } = useAuth();
   const queryClient = useQueryClient();
+  const { addToCart, isAdding } = useCart();
 
   const { data, isLoading, error, refetch: refetchProduct } = useGetApi<{ data: GetProduct }>({
     key: ["product", productId],
@@ -358,7 +360,7 @@ function ProductDetailContent() {
     return (
       <main className="container min-h-[70vh] pt-32 pb-24 flex flex-col items-center justify-center text-center">
         <div className="max-w-md mx-auto px-4 flex flex-col items-center animate-fade-in">
-          <div className="w-16 h-16 bg-surface-soft border border-border flex items-center justify-center rounded-none mb-8">
+          <div className="w-16 h-16 bg-surface-soft border border-border-accent flex items-center justify-center rounded-none mb-8">
             <Icon icon="solar:danger-triangle-bold" className="w-8 h-8 text-primary-bright" />
           </div>
 
@@ -512,7 +514,37 @@ function ProductDetailContent() {
     console.log("Opening carousel", media, index);
   };
 
-  const handleAddToBag = () => setShowCartModal(true);
+  const handleAddToBag = async () => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    try {
+      if (!selectedSizeObj) {
+        toast.error("Please select a size first");
+        return;
+      }
+
+      const variantData = {
+        id: selectedSizeObj.id || null,
+        price: parsePrice(selectedSizeObj.discountPrice ?? selectedSizeObj.price ?? displayPrice),
+        discountPrice: parsePrice(selectedSizeObj.discountPrice ?? selectedSizeObj.price ?? displayPrice),
+        color: selectedColor,
+        size: selectedSize,
+      };
+      await addToCart({
+        productId: product._id ?? product.id,
+        quantity: quantity,
+        selectedVariant: JSON.stringify(selectedSizeObj.id || (selectedSizeObj as any)._id || "")
+      });
+
+      setShowCartModal(true);
+    } catch (err: any) {
+      console.log("Error adding product to cart:", err);
+      toast.error(err?.message || "Failed to add product to cart");
+    }
+  };
 
   return (
     <>
@@ -609,7 +641,7 @@ function ProductDetailContent() {
                   )}
                 </div>
                 {totalReviewsCount !== 0 && (
-                  <div className="flex items-center gap-1 border-l border-border pl-6">
+                  <div className="flex items-center gap-1 border-l border-border-accent pl-6">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} size={14} className={i < Math.round(averageRatingVal) ? "fill-primary-bright text-primary-bright" : "text-border"} />
@@ -740,14 +772,23 @@ function ProductDetailContent() {
                 </div>
                 <button
                   onClick={handleAddToBag}
-                  disabled={!inStock}
+                  disabled={!inStock || isAdding}
                   className={`flex-1 font-semibold uppercase flex items-center justify-center space-x-3 transition-all shadow-xl text-sm h-14
-                    ${inStock
+                    ${inStock && !isAdding
                       ? "bg-primary-bright text-white hover:bg-primary hover:shadow-primary-bright/20 cursor-pointer"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"}`}
                 >
-                  <ShoppingBag size={20} />
-                  <span>{inStock ? "Add to Bag" : "Out of Stock"}</span>
+                  {isAdding ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>ADDING...</span>
+                    </span>
+                  ) : (
+                    <>
+                      <ShoppingBag size={20} />
+                      <span>{inStock ? "Add to Bag" : "Out of Stock"}</span>
+                    </>
+                  )}
                 </button>
               </div>
               <button
