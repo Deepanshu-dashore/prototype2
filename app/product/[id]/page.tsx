@@ -714,12 +714,35 @@ function ProductDetailContent() {
               {selectedColor && (
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm text-gray-800 font-bold uppercase tracking-widest">Sizes</h3>
-                  <div className="text-[10px] text-gray-900 font-bold uppercase tracking-widest bg-surface-soft px-3 py-1">
-                    {!selectedSize
-                      ? "Select size"
-                      : inStock
-                        ? "In Stock"
-                        : "Out of Stock"}
+                  <div className="flex items-center gap-3 text-xs text-text-secondary">
+                    {/* Size Guide Link */}
+                    <button
+                      onClick={() => setShowSizeChart(true)}
+                      className="text-gray-500 hover:text-black transition-colors cursor-pointer flex items-center gap-1.5 underline decoration-1 decoration-gray-300 hover:decoration-black underline-offset-2"
+                    >
+                      <Icon
+                        icon="emojione-monotone:straight-ruler"
+                        className="w-3.5 h-3.5 -rotate-45"
+                      />
+                      Size guide
+                    </button>
+                    
+                    <span className="text-gray-300">|</span>
+                    
+                    {/* Stock Status */}
+                    <span className={`font-semibold uppercase tracking-wider text-[11px] ${
+                      !selectedSize
+                        ? "text-gray-400"
+                        : inStock
+                          ? "text-success"
+                          : "text-error"
+                    }`}>
+                      {!selectedSize
+                        ? "Select size"
+                        : inStock
+                          ? "In Stock"
+                          : "Out of Stock"}
+                    </span>
                   </div>
                 </div>
               )}
@@ -747,20 +770,7 @@ function ProductDetailContent() {
                     </button>
                   );
                 })}
-                          {/* Size Guide */}
-              <button
-                onClick={() => setShowSizeChart(true)}
-                className="text-gray-700 text-xs font-normal hover:text-black flex items-center gap-2 group transition-colors cursor-pointer"
-              >
-                <div className="w-8 h-8 flex items-center justify-center bg-surface-soft rounded-full group-hover:bg-black group-hover:text-white transition-all">
-                  <Icon
-                    icon="emojione-monotone:straight-ruler"
-                    className="w-5 h-5 -rotate-45"
-                  />
-                </div>
-                <span className="underline uppercase tracking-widest font-bold text-[10px]">Size Guide</span>
-              </button>
-            </div>
+              </div>
  
             {/* Quantity & Add to Cart */}
             <div className="flex flex-col gap-4 mt-auto">

@@ -158,14 +158,34 @@ const mapBackendProduct = (p: any): Product => {
       ? p.category.name
       : p.category || p.subCategory || "PERFORMANCE";
 
+  // Derive first variant's first image with fallback
+  let primaryImage = "";
+  let hoverImage = "";
+
+  if (p.variants && p.variants.length > 0 && p.variants[0].images && p.variants[0].images.length > 0) {
+    primaryImage = p.variants[0].images[0];
+    if (p.variants[0].images.length > 1) {
+      hoverImage = p.variants[0].images[1];
+    } else if (p.variants.length > 1 && p.variants[1].images && p.variants[1].images.length > 0) {
+      hoverImage = p.variants[1].images[0];
+    }
+  }
+
+  if (!primaryImage) {
+    primaryImage = p.productImage?.[0] || "";
+  }
+  if (!hoverImage) {
+    hoverImage = p.productImage?.[1] || "";
+  }
+
   return {
     id: p._id || p.id,
     name: p.productName || "TECHNICAL GEAR",
     category: categoryName.toUpperCase(),
     price: priceStr,
-    image: resolveImageUrl(p.productImage?.[0]),
+    image: resolveImageUrl(primaryImage),
     imageAlt: p.productName || "Technical Gear",
-    hoverImage: p.productImage?.[1] ? resolveImageUrl(p.productImage[1]) : undefined,
+    hoverImage: hoverImage ? resolveImageUrl(hoverImage) : undefined,
     rating: p.averageRating || 0,
     isNew: p.bestSellingStatus !== true,
     discount: discountStr,
