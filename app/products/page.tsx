@@ -1,13 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { setFilters as setFiltersAction } from "@/app/store/filterSlice";
 import { useGetApi } from "@/hooks/useApi";
 import API_ENDPOINTS from "@/app/constants/apiConfig";
 import { useFilter } from "@/hooks/useFilter";
 import ProductCard, { Product } from "@/components/shared/ProductCard";
 import FilterSection from "@/components/products/FilterSection";
 import ToolBar from "@/components/products/ToolBar";
+import ProductsBanner from "@/components/products/ProductsBanner";
 import { Filter, X, ShoppingBag, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 
 const DISPLAY_LIMIT = 10; // products shown per page
@@ -65,8 +68,10 @@ const mapBackendProduct = (p: any): Product => {
   };
 };
 
-export default function ProductsPage() {
+function ProductsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const dispatch = useDispatch();
   const [collapsed, setCollapsed] = useState(false);
 
   // filters hook — page/limit managed internally here, not in the hook
@@ -74,6 +79,64 @@ export default function ProductsPage() {
 
   // ─── Display page (what user sees: 1, 2, 3, …) ────────────────────
   const [displayPage, setDisplayPage] = useState(1);
+
+  // Refs to avoid infinite dependency loop with filters state
+  const filtersRef = useRef(filters);
+  const displayPageRef = useRef(displayPage);
+
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
+
+  useEffect(() => {
+    displayPageRef.current = displayPage;
+  }, [displayPage]);
+
+  // Sync URL query params to Redux filter state on query changes (e.g. Header Nav click)
+  useEffect(() => {
+    const currentFilters = filtersRef.current;
+    const currentPage = displayPageRef.current;
+
+    const categoryParam = searchParams.get("category") || "";
+    const genderParam = searchParams.get("gender") || "";
+    const colorParam = searchParams.get("color") || "";
+    const sizeParam = searchParams.get("size") || "";
+    const minPriceParam = searchParams.get("minPrice") || "";
+    const maxPriceParam = searchParams.get("maxPrice") || "";
+    const sortParam = searchParams.get("sort") || "popular";
+    const searchParam = searchParams.get("search") || "";
+    const pageParam = searchParams.get("page") || "1";
+
+    const isDifferent =
+      (currentFilters.category || "") !== categoryParam ||
+      (currentFilters.gender || "") !== genderParam ||
+      (currentFilters.color || "") !== colorParam ||
+      (currentFilters.size || "") !== sizeParam ||
+      (currentFilters.minPrice || "") !== minPriceParam ||
+      (currentFilters.maxPrice || "") !== maxPriceParam ||
+      (currentFilters.sort || "popular") !== sortParam ||
+      (currentFilters.search || "") !== searchParam ||
+      String(currentPage) !== pageParam;
+
+    if (isDifferent) {
+      dispatch(
+        setFiltersAction({
+          category: categoryParam,
+          gender: genderParam,
+          color: colorParam,
+          size: sizeParam,
+          minPrice: minPriceParam,
+          maxPrice: maxPriceParam,
+          sort: sortParam,
+          search: searchParam,
+        })
+      );
+      const pageNum = parseInt(pageParam, 10);
+      if (!isNaN(pageNum) && pageNum > 0) {
+        setDisplayPage(pageNum);
+      }
+    }
+  }, [searchParams, dispatch]);
 
   // Reset display page to 1 when any filter changes
   const prevFiltersRef = useRef(filters);
@@ -245,9 +308,15 @@ export default function ProductsPage() {
   );
 
   return (
-    <Suspense fallback={<div>Loading filters...</div>}>
-      <div className="min-h-screen bg-gray-50 border-t border-gray-200 pt-6">
-        <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto px-4 md:px-8">
+    <div className="min-h-screen bg-gray-50 border-t border-gray-200">
+      
+      <ProductsBanner 
+        categories={categories?.data || []}
+        activeCategoryId={filters.category}
+        activeGender={filters.gender}
+      />
+
+      <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto px-4 md:px-8 mt-6">
           {/* Filters */}
           <div className="hidden lg:block">
             <FilterSection
@@ -417,6 +486,18 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black" />
+        <span className="text-xs uppercase tracking-widest text-gray-400 font-heading">Loading products...</span>
+      </div>
+    }>
+      <ProductsContent />
     </Suspense>
   );
 }

@@ -11,6 +11,7 @@ import BannerSlider from "@/components/home/BannerSlider";
 import CategoryGrid from "@/components/home/CategoryGrid";
 import Testimonials from "@/components/home/Testimonials";
 import Newsletter from "@/components/home/Newsletter";
+import FollowUs from "@/components/home/FollowUs";
 import { useGetApi } from "@/hooks/useApi";
 import API_ENDPOINTS from "@/app/constants/apiConfig";
 import { Product } from "@/components/shared/ProductCard";
@@ -207,34 +208,11 @@ export default function Home() {
   });
   // console.log(data?.data, "data")
 
-  // Handle loading state
-  if (isLoading) {
-    return (
-      <>
-        <HeroSlider />
-        <TrustBar />
-        <CategoryGrid />
-        <FabricShowcase /> 
-        <GridSkeleton
-          title="Trending Now"
-          subtitle="Experience the latest in high-performance innovation and athletic style."
-        />
-        <BannerSlider />
-        <GridSkeleton
-          title="Best Sellers"
-          subtitle="Our highest-rated, most demanded gear engineered for everyday excellence."
-        />
-        <CountdownDeals />
-        <Testimonials />
-      </>
-    );
-  }
-
   // Gather products with fallbacks in case of query error or empty backend data
   let trendingProductsToShow: any = fallbackTrending;
   let bestSellersToShow: any = fallbackBestSellers;
 
-  if (!error && data?.data && data.data.length > 0) {
+  if (!isLoading && !error && data?.data && data.data.length > 0) {
     try {
       const mapped = data.data.map(mapBackendProduct);
 
@@ -255,24 +233,39 @@ export default function Home() {
   return (
     <>
       <HeroSlider />
-      <TrustBar />
       <CategoryGrid />
       {/* <ShopBySport /> */}
       <FabricShowcase /> 
-      <ProductGrid
-        title="Trending Now"
-        subtitle="Experience the latest in high-performance innovation and athletic style."
-        products={trendingProductsToShow}
-        showRating={false}
-      />
+      {isLoading ? (
+        <GridSkeleton
+          title="Trending Now"
+          subtitle="Experience the latest in high-performance innovation and athletic style."
+        />
+      ) : (
+        <ProductGrid
+          title="Trending Now"
+          subtitle="Experience the latest in high-performance innovation and athletic style."
+          products={trendingProductsToShow}
+          showRating={false}
+        />
+      )}
       <BannerSlider />
-      <ProductGrid
-        title="Best Sellers"
-        subtitle="Our highest-rated, most demanded gear engineered for everyday excellence."
-        products={bestSellersToShow}
-      />
-      <CountdownDeals />
+      {isLoading ? (
+        <GridSkeleton
+          title="Best Sellers"
+          subtitle="Our highest-rated, most demanded gear engineered for everyday excellence."
+        />
+      ) : (
+        <ProductGrid
+          title="Best Sellers"
+          subtitle="Our highest-rated, most demanded gear engineered for everyday excellence."
+          products={bestSellersToShow}
+        />
+      )}
+      {/* <CountdownDeals /> */}
       <Testimonials />
+      <FollowUs />
+      <TrustBar />
       {/* <Newsletter /> */}
     </>
   );

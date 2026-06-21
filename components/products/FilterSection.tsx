@@ -223,7 +223,7 @@ export default function FilterSection({
                   <div
                     key={i}
                     className="h-[18px] bg-gray-100 animate-pulse rounded-sm"
-                    style={{ width: `${60 + Math.random() * 30}%` }}
+                    style={{ width: `${70 + (i * 7) % 25}%` }}
                   />
                 ))}
               </div>
