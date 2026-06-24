@@ -34,9 +34,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products, subtitle, sh
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-7 gap-y-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} showRating={showRating} />
+            <ProductCard key={product.id} product={product} showRating={showRating} disableVariants={true} />
           ))}
         </div>
       </div>

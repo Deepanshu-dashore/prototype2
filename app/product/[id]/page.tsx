@@ -123,7 +123,8 @@ const SIMILAR_PRODUCTS: Product[] = [
   { id: 2, name: "VELOCITY V2 SNEAKERS", category: "RUNNING", price: "$180.00", image: "/disport_sneakers_product_1778407255046.png", imageAlt: "Velocity V2 Sneakers", rating: 5.0, isNew: true },
   { id: 3, name: "COMPRESSION ARMOR TIGHTS", category: "GYMWEAR", price: "$75.00", image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2071&auto=format&fit=crop", imageAlt: "Compression Armor Tights", rating: 4.8 },
   { id: 4, name: "CORE TECH WINDSTOPPER", category: "OUTDOOR", price: "$120.00", image: "https://images.unsplash.com/photo-1511402339625-5942682714cd?q=80&w=2070&auto=format&fit=crop", imageAlt: "Core Tech Windstopper", rating: 4.7, discount: "20% OFF" },
-  { id: 5, name: "IGNITE FOAM RUNNERS", category: "RUNNING", price: "$160.00", image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?q=80&w=2070&auto=format&fit=crop", imageAlt: "Ignite Foam Runners", rating: 4.9 }
+  { id: 5, name: "IGNITE FOAM RUNNERS", category: "RUNNING", price: "$160.00", image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?q=80&w=2070&auto=format&fit=crop", imageAlt: "Ignite Foam Runners", rating: 4.9 },
+  { id: 6, name: "AERO-ACTIVE TRAINING SHORTS", category: "TRAINING", price: "$45.00", image: "https://images.unsplash.com/photo-1539185441755-769473a23570?q=80&w=2070&auto=format&fit=crop", imageAlt: "Aero-Active Training Shorts", rating: 4.9 }
 ];
 
 interface SizeDetail {
@@ -479,8 +480,8 @@ function ProductDetailContent() {
     }
   };
 
-  const backendReviews = fetchedReviews?.data || fetchedReviews || [];
-  const reviewsList = Array.isArray(backendReviews) ? backendReviews : [];
+  const backendReviews = fetchedReviews?.data?.reviews || (Array.isArray(fetchedReviews?.data) ? fetchedReviews.data : (Array.isArray(fetchedReviews) ? fetchedReviews : []));
+  const reviewsList = backendReviews as any[];
 
   const totalReviewsCount = reviewsList.length;
 
@@ -504,7 +505,10 @@ function ProductDetailContent() {
     setExpandedSections(prev => ({ ...prev, [section as keyof typeof expandedSections]: !prev[section as keyof typeof expandedSections] }));
   };
 
-  const capitalize = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+  const capitalize = (str: string) => {
+    if (!str) return "";
+    return str.split(" ").map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()).join(" ");
+  };
 
   const toggleReviewDescription = (id: string) => {
     setExpandedReviews(prev => ({ ...prev, [id]: !prev[id] }));
@@ -1173,44 +1177,95 @@ function ProductDetailContent() {
                       </button>
                     </div>
                   ) : (
-                    <div className="divide-y divide-gray-50">
+                    <div className="flex flex-col gap-6">
                       {reviewsList.map((review, index) => {
                         const firstName = review.userId?.firstName || review.firstName || "Verified";
                         const lastName = review.userId?.lastName || review.lastName || "Athlete";
                         const comment = review.comment || "";
                         const ratingVal = review.rating || 5;
                         const media = review.media || [];
+                        const reviewDate = review.createdAt ? new Date(review.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        }) : "";
 
                         return (
-                          <div key={review._id || index} className="py-10 first:pt-0 group">
-                            <div className="flex flex-col md:flex-row gap-8">
-                              <div className="md:w-1/4 space-y-4">
-                                <div className="space-y-1">
-                                  <h5 className="text-[11px] font-bold uppercase tracking-widest text-gray-900 font-heading">
-                                    {firstName} {lastName}
-                                  </h5>
-                                  <div className="flex items-center gap-1">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                      <Star key={star} size={10} className={star <= ratingVal ? "fill-black text-black" : "text-gray-200"} />
-                                    ))}
-                                  </div>
+                          <div key={review._id || index} className="p-6 md:p-8 bg-[#fbfbfb] hover:bg-white border border-gray-200/50 rounded-xl transition-all duration-300 shadow-xs hover:shadow-md hover:border-black/10 group">
+                            <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+                              <div className="md:w-1/3 flex gap-4 items-center border-b md:border-b-0 md:border-r border-gray-200/40 pb-4 md:pb-0 md:pr-6">
+                                {/* Profile image or fallback avatar */}
+                                <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gray-100 border border-gray-200 shrink-0 shadow-inner">
+                                  <Image
+                                    src={
+                                      review.userId?.profileImage || review.profileImage
+                                        ? resolveImageUrl(review.userId?.profileImage || review.profileImage)
+                                        : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop"
+                                    }
+                                    alt={`${firstName} ${lastName}`}
+                                    fill
+                                    sizes="64px"
+                                    className="object-cover"
+                                  />
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <ShieldCheck size={12} className="text-green-600" />
-                                  <span className="text-[8px] font-bold uppercase tracking-widest text-green-600">Verified Athlete</span>
+                                <div className="space-y-2 flex-1">
+                                  <div className="space-y-1">
+                                    <h5 className="text-[13px] font-bold uppercase tracking-wider text-black font-heading leading-tight">
+                                      {capitalize(firstName)} {capitalize(lastName)}
+                                    </h5>
+                                    <div className="flex items-center gap-0.5">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star key={star} size={11} className={star <= ratingVal ? "fill-primary-bright text-primary-bright" : "text-gray-200"} />
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col gap-1.5 items-start">
+                                    <div className="flex items-center gap-1.5 bg-[#eaf7ee] text-[#1a5f2e] border border-[#cbeed5] px-2.5 py-1 rounded-full w-fit">
+                                      <ShieldCheck size={10} className="fill-[#eaf7ee] text-[#22c55e]" />
+                                      <span className="text-[8px] font-extrabold uppercase tracking-widest leading-none">Verified Athlete</span>
+                                    </div>
+                                    {reviewDate && (
+                                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+                                        {reviewDate}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
 
-                              <div className="md:w-3/4 space-y-6">
-                                <p className="text-sm text-gray-600 leading-relaxed font-medium">
-                                  "{comment}"
-                                </p>
+                              <div className="md:w-2/3 flex flex-col justify-between space-y-4">
+                                <div className="space-y-3">
+                                  {/* Ratings Breakdown inside card (if they exist) */}
+                                  {(review.sizeRating || review.qualityRating || review.comfortRating) && (
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[9px] font-extrabold uppercase tracking-widest text-gray-400">
+                                      {review.sizeRating && (
+                                        <span className="flex items-center gap-1">
+                                          Fit: <span className="text-black font-black">{review.sizeRating}/5</span>
+                                        </span>
+                                      )}
+                                      {review.qualityRating && (
+                                        <span className="flex items-center gap-1 border-l border-gray-200 pl-4">
+                                          Quality: <span className="text-black font-black">{review.qualityRating}/5</span>
+                                        </span>
+                                      )}
+                                      {review.comfortRating && (
+                                        <span className="flex items-center gap-1 border-l border-gray-200 pl-4">
+                                          Comfort: <span className="text-black font-black">{review.comfortRating}/5</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  <p className="text-sm text-gray-700 leading-relaxed font-normal font-lexend">
+                                    "{comment}"
+                                  </p>
+                                </div>
 
                                 {media.length > 0 && (
-                                  <div className="flex gap-4">
+                                  <div className="flex flex-wrap gap-2.5 pt-2">
                                     {media.map((mediaUrl: string, i: number) => (
-                                      <div key={i} className="relative w-24 aspect-square rounded-sm overflow-hidden cursor-zoom-in group-hover:shadow-xl transition-all">
-                                        <Image src={resolveImageUrl(mediaUrl)} alt="Review" fill className="object-cover grayscale hover:grayscale-0 transition-all duration-500" />
+                                      <div key={i} className="relative w-16 h-16 rounded-md overflow-hidden cursor-zoom-in border border-gray-100 hover:border-black transition-all duration-300">
+                                        <Image src={resolveImageUrl(mediaUrl)} alt="Review Media" fill className="object-cover" />
                                       </div>
                                     ))}
                                   </div>
@@ -1230,19 +1285,24 @@ function ProductDetailContent() {
 
         {/* Similar Products - Editorial Composition */}
         <div className="mt-56 pb-32">
-          <div className="flex items-end justify-between mb-20 gap-8">
-            <div className="flex flex-col gap-2">
-              <span className="text-primary-bright font-bold uppercase tracking-[0.3em] text-[10px]">Gear Upgrade</span>
-              <h2 className="text-5xl lg:text-7xl font-bold uppercase tracking-tighter leading-none">Complete The Kit</h2>
+          <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-16">
+            <div className="headerLeft">
+              <h2 className="heading-brand">Complete The Kit</h2>
+              <p className="brand-desc">
+                Complete your performance look with our highly recommended matching gear.
+              </p>
             </div>
-            <Link href="/shop" className="group flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-black">
-              <span className="border-b-2 border-black pb-1">Shop Collection</span>
-              <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            <Link
+              href="/shop"
+              className="group flex items-center space-x-2 font-semibold uppercase text-xs border-b-2 border-black/10 hover:border-primary-bright pb-2 transition-all duration-300"
+            >
+              <span>Shop Collection</span>
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
             {SIMILAR_PRODUCTS.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} disableVariants={true} />
             ))}
           </div>
         </div>

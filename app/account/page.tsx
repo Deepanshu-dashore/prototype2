@@ -2067,6 +2067,7 @@ function AccountDashboardContent() {
                     imageAlt: prod.name,
                     rating: 5
                   }}
+                  disableVariants={true}
                 />
               ))}
             </div>

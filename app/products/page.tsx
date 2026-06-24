@@ -73,10 +73,25 @@ const mapBackendProduct = (p: any): Product => {
     hoverImage = p.productImage?.[1] || "";
   }
 
+  let genderPrefix = "";
+  if (p.gender) {
+    const g = p.gender.toLowerCase().trim();
+    if (g === "men" || g === "male") genderPrefix = "Men's";
+    else if (g === "women" || g === "female") genderPrefix = "Women's";
+    else if (g === "unisex") genderPrefix = "Unisex";
+    else genderPrefix = p.gender;
+  }
+
+  const subCatName = p.subCategory || (typeof p.category === "object" && p.category !== null ? p.category.name : p.category) || "";
+  const displayDesc = genderPrefix 
+    ? `${genderPrefix} ${subCatName}` 
+    : (subCatName || "Performance Gear");
+
   return {
     id: p._id || p.id,
     name: p.productName || "TECHNICAL GEAR",
     category: categoryName.toUpperCase(),
+    description: displayDesc,
     price: priceStr,
     image: resolveImageUrl(primaryImage),
     imageAlt: p.productName || "Technical Gear",
@@ -85,6 +100,7 @@ const mapBackendProduct = (p: any): Product => {
     isNew: p.bestSellingStatus !== true,
     discount: discountStr,
     badge: p.bestSellingStatus ? "Best Seller" : undefined,
+    variants: p.variants,
   };
 };
 
@@ -306,7 +322,7 @@ function ProductsContent() {
           {viewMode === "list" ? (
             <div className="flex gap-6 w-full">
               <div className="w-1/3">
-                <ProductCard product={product} showRating={true} />
+                <ProductCard product={product} showRating={true} disableVariants={true} />
               </div>
               <div className="w-2/3 flex flex-col justify-center">
                 <h3 className="text-xl font-bold uppercase">{product.name}</h3>
@@ -320,7 +336,7 @@ function ProductsContent() {
               </div>
             </div>
           ) : (
-            <ProductCard product={product} showRating={true} />
+            <ProductCard product={product} showRating={true} disableVariants={true} />
           )}
         </div>
       ))}
