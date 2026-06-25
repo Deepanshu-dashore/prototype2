@@ -62,6 +62,8 @@ export const API_ENDPOINTS = {
   // Cart endpoints
   CART: {
     ADD: `/carts/add`,
+    ADD_SINGLE: `/carts/add-single`,
+    ADD_BULK: `/carts/add-bulk`,
     LOCAL_CART: `/carts/local-cart`,
     SYNC_CART: `/carts/sync-cart`,
     GET_CART: `/carts/get-cart`,

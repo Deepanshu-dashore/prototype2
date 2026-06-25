@@ -68,6 +68,20 @@ export function useCart() {
     },
   });
 
+  // 2a. Add Single Product to Cart (POST)
+  const { mutateAsync: addSingleProductMutate, isPending: isAddingSingle } = useMutationApi({
+    key: "addSingleToCart",
+    url: API_ENDPOINTS.CART.ADD_SINGLE,
+    method: "POST",
+    requireAuth: true,
+    options: {
+      onSuccess: () => {
+        // Refetch cart data from server to keep state and pricing correct
+        refetchCart();
+      },
+    },
+  });
+
   // 3. Update Cart Product (PATCH)
   // Backend URL is: PATCH /carts/update-cart/:cartProductId
   const { mutateAsync: updateProductMutate, isPending: isUpdating } = useMutationApi({
@@ -104,6 +118,27 @@ export function useCart() {
       return result?.data || result;
     } catch (error) {
       console.error("Error in addToCart:", error);
+      throw error;
+    }
+  };
+
+  const addToCartSingle = async (payload: {
+    productId: string;
+    selectedVariant: {
+      id: string;
+      price: number;
+      discountPrice?: number;
+      size: string;
+      color: string;
+    };
+    quantity: number;
+    image?: string;
+  }) => {
+    try {
+      const result = await addSingleProductMutate({ payload });
+      return result?.data || result;
+    } catch (error) {
+      console.error("Error in addToCartSingle:", error);
       throw error;
     }
   };
@@ -192,11 +227,13 @@ export function useCart() {
     totalAmount: cart.totalAmount,
     pricing: cart.pricing,
     loading: cart.loading || isFetching,
-    isAdding,
+    isAdding: isAdding || isAddingSingle,
+    isAddingSingle,
     isUpdating,
     isRemoving,
     refetchCart,
     addToCart,
+    addToCartSingle,
     updateCartItem,
     removeFromCart,
     clearCart,

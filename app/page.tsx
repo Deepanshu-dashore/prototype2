@@ -197,6 +197,7 @@ const mapBackendProduct = (p: any): Product => {
     name: p.productName || "TECHNICAL GEAR",
     category: categoryName.toUpperCase(),
     description: displayDesc,
+    productDescription: p.productDescription,
     price: priceStr,
     image: resolveImageUrl(primaryImage),
     imageAlt: p.productName || "Technical Gear",

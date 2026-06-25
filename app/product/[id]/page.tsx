@@ -240,7 +240,7 @@ function ProductDetailContent() {
 
   const { isAuthenticated, isClient } = useAuth();
   const queryClient = useQueryClient();
-  const { addToCart, isAdding } = useCart();
+  const { addToCartSingle, isAdding } = useCart();
 
   const { data, isLoading, error, refetch: refetchProduct } = useGetApi<{ data: GetProduct }>({
     key: ["product", productId],
@@ -531,16 +531,17 @@ function ProductDetailContent() {
       }
 
       const variantData = {
-        id: selectedSizeObj.id || null,
+        id: selectedSizeObj.id || (selectedSizeObj as any)._id || "",
         price: parsePrice(selectedSizeObj.discountPrice ?? selectedSizeObj.price ?? displayPrice),
         discountPrice: parsePrice(selectedSizeObj.discountPrice ?? selectedSizeObj.price ?? displayPrice),
         color: selectedColor,
         size: selectedSize,
       };
-      await addToCart({
+      await addToCartSingle({
         productId: product._id ?? product.id,
         quantity: quantity,
-        selectedVariant: JSON.stringify(selectedSizeObj.id || (selectedSizeObj as any)._id || "")
+        selectedVariant: variantData,
+        image: mainImage || product.image
       });
 
       setShowCartModal(true);

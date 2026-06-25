@@ -368,51 +368,6 @@ export default function CartPage() {
 
   const finalAmount = useMemo(() => totalPrice + 4, [totalPrice]);
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black" />
-      </div>
-    );
-  }
-
-  if (!isLogin) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center py-20 px-6 max-w-md mx-auto">
-          {/* Login Icon */}
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <User className="w-10 h-10 text-gray-400" />
-          </div>
-          
-          {/* Main Message */}
-          <h2 className="text-2xl font-bold text-black mb-4">Please Sign In to View Your Cart</h2>
-          
-          {/* Description */}
-          <p className="text-gray-600 mb-8">
-            Sign in to access your saved items and continue shopping
-          </p>
-          
-          {/* Action Buttons */}
-          <div className="flex flex-row sm:flex-row gap-4 justify-center items-center">
-            <button 
-              onClick={() => router.push("/login")}
-              className="bg-black text-white px-8 py-3 text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer"
-            >
-              Sign In
-            </button>
-            <button 
-              onClick={() => router.push("/")}
-              className="border border-gray-300 text-gray-700 px-8 py-3 text-sm font-medium hover:border-black hover:text-black transition-colors cursor-pointer"
-            >
-              Continue Shopping
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Initialize selected variants based on cart items
   useEffect(() => {
     if (cartItems.length > 0) {
@@ -466,6 +421,51 @@ export default function CartPage() {
   const selectedAddress = useMemo(() => 
     addresses.find((addr: any) => addr._id === selectedAddressId), 
   [addresses, selectedAddressId]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black" />
+      </div>
+    );
+  }
+
+  if (!isLogin) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center py-20 px-6 max-w-md mx-auto">
+          {/* Login Icon */}
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <User className="w-10 h-10 text-gray-400" />
+          </div>
+          
+          {/* Main Message */}
+          <h2 className="text-2xl font-bold text-black mb-4">Please Sign In to View Your Cart</h2>
+          
+          {/* Description */}
+          <p className="text-gray-600 mb-8">
+            Sign in to access your saved items and continue shopping
+          </p>
+          
+          {/* Action Buttons */}
+          <div className="flex flex-row sm:flex-row gap-4 justify-center items-center">
+            <button 
+              onClick={() => router.push("/login")}
+              className="bg-black text-white px-8 py-3 text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer"
+            >
+              Sign In
+            </button>
+            <button 
+              onClick={() => router.push("/")}
+              className="border border-gray-300 text-gray-700 px-8 py-3 text-sm font-medium hover:border-black hover:text-black transition-colors cursor-pointer"
+            >
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleApplyPromo = () => {
     if (!promoCode.trim()) {

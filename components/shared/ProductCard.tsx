@@ -24,6 +24,7 @@ export interface Product {
   badge?: string;
   variants?: any[];
   description?: string;
+  productDescription?: string;
 }
 
 interface ProductCardProps {
@@ -104,6 +105,14 @@ const formatCategory = (cat: string) => {
     .join(' ');
 };
 
+const parsePrice = (val: string | number | undefined): number => {
+  if (val === undefined || val === null) return 0;
+  if (typeof val === 'number') return val;
+  const cleaned = val.replace(/[₹$,]/g, '').trim();
+  const num = parseFloat(cleaned);
+  return isNaN(num) ? 0 : num;
+};
+
 const loadingIcons = [
   "mdi:soccer", "mdi:basketball", "mdi:tennis", "mdi:cricket", 
   "mdi:badminton", "mdi:volleyball", "mdi:golf", "mdi:swimming",
@@ -124,7 +133,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  const { addToCart } = useCart();
+  const { addToCartSingle } = useCart();
   const { isAuthenticated } = useAuth();
 
   // Initialize selectedColor and selectedSize when product loads or changes
@@ -144,6 +153,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const activeVariant = product.variants?.find(
     (v: any) => v.color?.trim() === selectedColor
   ) || product.variants?.[0];
+
+  const activeSizeObj = activeVariant?.sizes?.find(
+    (s: any) => s.size === selectedSize
+  ) || activeVariant?.sizes?.[0];
+
+  const isVariantAvailable = activeSizeObj ? activeSizeObj.stock > 0 : true;
 
   const displayImage = activeVariant?.images?.[0]
     ? resolveImageUrl(activeVariant.images[0])
@@ -169,7 +184,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const getDisplayPrice = () => {
     if (activeVariant) {
-      const activeSizeObj = activeVariant.sizes?.find((s: any) => s.size === selectedSize) || activeVariant.sizes?.[0];
       if (activeSizeObj) {
         const price = activeSizeObj.price;
         const discountPrice = activeSizeObj.discountPrice;
@@ -234,15 +248,26 @@ const ProductCard: React.FC<ProductCardProps> = ({
       return;
     }
 
+    if (!isVariantAvailable) {
+      toast.error("This variant size is out of stock");
+      return;
+    }
+
     try {
       setIsAddingToCart(true);
-      const activeSizeObj = activeVariant?.sizes?.find((s: any) => s.size === selectedSize) || activeVariant?.sizes?.[0];
-      const variantId = activeSizeObj?.id || activeSizeObj?._id || "";
+      const variantData = {
+        id: activeSizeObj?.id || activeSizeObj?._id || "",
+        price: parsePrice(activeSizeObj?.discountPrice ?? activeSizeObj?.price),
+        discountPrice: parsePrice(activeSizeObj?.discountPrice ?? activeSizeObj?.price),
+        color: selectedColor || activeVariant?.color || "",
+        size: selectedSize || activeSizeObj?.size || "",
+      };
 
-      await addToCart({
-        productId: String(product.id),
+      await addToCartSingle({
+        productId: String(product.id || (product as any)._id),
         quantity: 1,
-        selectedVariant: variantId ? JSON.stringify(variantId) : ""
+        selectedVariant: variantData,
+        image: activeVariant?.images?.[0] || product.image
       });
 
       toast.success("Added to Bag successfully");
@@ -294,6 +319,25 @@ const ProductCard: React.FC<ProductCardProps> = ({
             {renderBrandLogo()}
           </div>
 
+          {/* Badges overlay */}
+          <div className="absolute bottom-4 left-4 z-10 flex flex-col gap-1.5 items-start pointer-events-none">
+            {product.isNew && (
+              <span className="bg-black text-white text-[10px] font-bold px-2.5 py-1 uppercase tracking-widest rounded-xs shadow-xs">
+                New Launch
+              </span>
+            )}
+            {product.discount && (
+              <span className="bg-[#ba1a1a] text-white text-[10px] font-bold px-2.5 py-1 uppercase tracking-widest rounded-xs shadow-xs">
+                {product.discount}
+              </span>
+            )}
+            {product.badge && (
+              <span className="bg-white text-black border border-gray-200 text-[10px] font-bold px-2.5 py-1 uppercase tracking-widest rounded-xs shadow-xs">
+                {product.badge}
+              </span>
+            )}
+          </div>
+
           {/* Base Image */}
           <Image
             src={displayImage}
@@ -318,24 +362,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             />
           )}
 
-          {/* Badges */}
-          <div className="absolute top-0 left-0 z-10 flex flex-col overflow-hidden rounded-br-xl">
-            {product.isNew && (
-              <span className="bg-[#f0655d] text-white text-[11px] font-bold px-4 py-1.5 uppercase tracking-wider text-center flex items-center justify-center w-full">
-                New Launch
-              </span>
-            )}
-            {product.discount && (
-              <span className="bg-[#ba1a1a] text-white text-[11px] font-bold px-4 py-1.5 uppercase tracking-wider text-center flex items-center justify-center w-full">
-                {product.discount}
-              </span>
-            )}
-            {product.badge && (
-              <span className="bg-[#1E1E1E] text-white text-[11px] font-bold px-4 py-1.5 uppercase tracking-wider text-center flex items-center justify-center w-full">
-                {product.badge}
-              </span>
-            )}
-          </div>
+
           
           {/* Wishlist Button */}
           <button 
@@ -387,9 +414,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </h3>
 
           {/* Category & Color dots horizontally aligned */}
-          <div className="flex justify-between items-center min-h-[20px]">
-            <span className="text-[12px] text-gray-500 font-normal">
-              {product.description ? formatCategory(product.description) : formatCategory(product.category)}
+          <div className="flex justify-between items-center min-h-[20px] w-full gap-2">
+            <span className="text-[12px] text-gray-500 font-normal line-clamp-1 flex-1">
+              {product.productDescription || product.description || product.category}
             </span>
             
             {/* Color swatches */}
@@ -493,7 +520,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             
             <button
               type="button"
-              disabled={isAddingToCart}
+              disabled={isAddingToCart || !isVariantAvailable}
               onClick={handleAddToCart}
               className="bg-linear-to-l from-[#ec7700] to-[#ff9e3b] hover:from-[#ff9e3b] hover:to-[#ec7700] text-white px-4 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-md hover:shadow-orange-500/10 disabled:from-gray-400 disabled:to-gray-400"
             >
@@ -513,6 +540,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     ))}
                   </motion.div>
                 </div>
+              ) : !isVariantAvailable ? (
+                <span>Out of Stock</span>
               ) : (
                 <>
                   <ShoppingBag size={12} />
